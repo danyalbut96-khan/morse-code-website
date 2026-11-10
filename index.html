@@ -1,1 +1,28 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Free Morse code encoder and decoder"><title>Morse — Code Translator</title><link rel="stylesheet" href="style.css"></head><body><header><a class="logo" href="#/">MORSE<span>.</span></a><nav><a href="#/">Home</a><a href="#/encoder">Encoder</a><a href="#/decoder">Decoder</a><a href="#/alphabet">Alphabet</a><a href="#/about">About</a></nav><button id="theme">☼</button></header><main id="app"></main><footer>Clear signals. Simple communication. · <span id="year"></span></footer><div id="toast"></div><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d18">
+  <meta name="description" content="A beautiful, free Morse code translator. Encode text, decode Morse signals, listen to the signal and learn the international Morse alphabet.">
+  <title>Morse — The signal studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="site-header">
+    <a class="brand" href="#/" aria-label="Morse home"><span class="brand-mark">M</span><span>MORSE<span class="brand-dot">.</span></span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#/" data-route="/">Overview</a><a href="#/encoder" data-route="/encoder">Encoder</a><a href="#/decoder" data-route="/decoder">Decoder</a><a href="#/alphabet" data-route="/alphabet">Alphabet</a>
+    </nav>
+    <div class="header-actions"><a class="header-cta" href="#/encoder">Open translator <span>↗</span></a><button class="theme-toggle" id="theme" aria-label="Toggle color theme">☼</button><button class="menu-toggle" id="menu" aria-label="Toggle navigation">☰</button></div>
+  </header>
+  <main id="app" tabindex="-1"></main>
+  <footer class="site-footer"><a class="brand footer-brand" href="#/"><span class="brand-mark">M</span><span>MORSE<span class="brand-dot">.</span></span></a><span>Built for curious minds and clear signals.</span><span>© <span id="year"></span> Morse Studio</span></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
