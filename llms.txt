@@ -8,7 +8,7 @@ A browser-based, privacy-first Morse translator and personal cipher studio.
 - /decoder — Morse to text
 - /alphabet — International Morse reference and app-specific Arabic/Urdu extensions
 - /cipher — Emoji codebook (obfuscation) and AES-256-GCM encryption
-- /practice — Morse recognition quiz
+- /practice — Morse recognition quiz\n- /about — About Morse Studio
 
 ## Privacy and security
 - Text conversion and cryptographic operations run locally in the browser.
