@@ -76,7 +76,7 @@ Serve the repository root with a static HTTP server for browser testing. Web Cry
 
 ## Not included in this Update 2 delivery
 
-Argon2id WASM is not included. The local six-word passphrase generator uses a compact bundled word bank and is Diceware-style, not the official 7776-word Diceware list. Full four-language page localization is not complete. Analytics are optional local route counters only and are never transmitted. Camera light reading is experimental and requires device testing.
+Argon2id WASM is not included. The local six-word passphrase generator uses a compact bundled word bank and is Diceware-style, not the official 7776-word Diceware list. Full four-language page localization is not complete. Argon2id WASM is not bundled; PBKDF2-SHA-256 is used for the new passphrase envelope. The word-list generator is a compact Diceware-style list, not the official 7776-word list. QR image scanning depends on BarcodeDetector support. Analytics are optional local route counters only and are never transmitted. Camera light reading is experimental and requires device testing.
 
 ## Test checklist
 
@@ -91,7 +91,7 @@ Argon2id WASM is not included. The local six-word passphrase generator uses a co
 9. Confirm existing passphrase ciphertext and Secret Room links still work in the legacy Secure tab.
 10. Install the PWA, share text from another app, and confirm /share opens with the shared text.
 11. Test direct navigation to every page, offline shell loading, keyboard focus and reduced-motion behavior.
-12. Test same-origin iframe embedding and camera/microphone permission prompts only after those media tools are implemented.
+12. Test the public embed route in an external parent page, and test camera/torch/microphone behavior on supported physical devices.\n13. Test QR rendering, QR image import where BarcodeDetector is available, and large-payload overflow handling.\n14. Test emoji, English/Urdu word-list, zero-width and PNG hide/extract round-trips before decrypting.\n15. Test the extension by loading the extension/ folder as an unpacked Manifest V3 extension.\n16. Run the Morse core package tests and verify the package can be packed for npm publication.
 
 ## Branding
 
