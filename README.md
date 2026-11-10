@@ -19,7 +19,8 @@ A static, privacy-first signal studio. The app is designed to run entirely in th
 ```text
 .
 ├── index.html
-├── about/index.html\n├── encoder/index.html
+├── about/index.html
+├── encoder/index.html
 ├── decoder/index.html
 ├── alphabet/index.html
 ├── cipher/index.html
@@ -35,7 +36,11 @@ A static, privacy-first signal studio. The app is designed to run entirely in th
 ├── llms-full.txt
 ├── logo.svg
 ├── favicon.svg
+├── favicon.ico
+├── apple-touch-icon.png
 ├── apple-touch-icon.svg
+├── icon-192.png
+├── icon-512.png
 ├── pwa-icon.svg
 ├── pwa-192.svg
 ├── pwa-512.svg
