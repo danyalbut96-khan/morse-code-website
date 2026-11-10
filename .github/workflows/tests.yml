@@ -12,6 +12,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --check app.js && node --check crypto-core.js && node --check contacts.js && node --check extras.js && node --check embed/widget.js && node --check extension/background.js && node --check extension/core.js && node --check extension/result.js
+      - run: node --check app.js && node --check crypto-core.js && node --check contacts.js && node --check extras.js && node --check embed/widget.js && node --check extension/background.js && node --check extension/core.js && node --check extension/result.js && node --check qrcode.min.js
       - run: npm test
       - run: node --test packages/morse-core/test.cjs
