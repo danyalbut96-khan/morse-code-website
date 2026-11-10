@@ -91,7 +91,7 @@ Brand, favicon, OG and PWA artwork are supplied as SVG. Some Apple home-screen w
 8. Repeat secure round-trip with optional Morse layer.
 9. Generate a Secret Room link, open it in a second browser/device, use its key in Secure mode and verify the ciphertext round-trip.
 10. Visit every route directly, confirm unique title/description/canonical, install the PWA, then go offline after the first successful load.
-11. Verify panic wipe clears this origin's local storage and offline cache.
+11. Verify panic wipe clears this origin's local storage and offline cache.\n12. Create two ECDH key pairs, exchange public JWKs, compare fingerprints, and verify cross-device encrypt/decrypt.\n13. Verify wrong ECDH key and modified envelope fail authentication; verify expired messages are rejected.\n14. Verify PIN vault wrong-PIN failure, lock/reopen and key rotation/revocation.\n15. Test PWA share target on Android and supported desktop browsers.\n16. Test same-origin iframe policy and camera/microphone permission prompts on supported devices.
 
 ## Branding
 
