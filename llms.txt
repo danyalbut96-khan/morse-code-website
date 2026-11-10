@@ -7,17 +7,26 @@ A browser-based, privacy-first Morse translator and personal cipher studio.
 - /encoder — Text to Morse with audio, light, vibration and tap-key input
 - /decoder — Morse to text
 - /alphabet — International Morse reference and app-specific Arabic/Urdu extensions
-- /cipher — Emoji codebook (obfuscation) and AES-256-GCM encryption
-- /practice — Morse recognition quiz\n- /about — About Morse Studio
+- /cipher — Emoji codebook (obfuscation) and legacy passphrase AES-256-GCM encryption
+- /practice — Morse recognition quiz
+- /contacts — ECDH P-256 public-key exchange, PIN-encrypted local contacts and safety fingerprints
+- /privacy — Privacy practices and limitations
+- /how-it-works — Browser APIs and local processing explanation
+- /about — About Morse Studio
 
 ## Privacy and security
-- Text conversion and cryptographic operations run locally in the browser.
+- Morse translation and supported cryptographic operations run locally in the browser.
 - No account, content analytics or message backend is required.
 - Codebook mode is obfuscation, not encryption.
-- Secure mode uses AES-256-GCM and PBKDF2-SHA256 with 600,000 iterations, a random 16-byte salt and 12-byte nonce.
-- The application does not store passphrases. Saved codebooks are encrypted at rest with a user-provided passphrase.
+- Legacy Secure mode uses AES-256-GCM and PBKDF2-SHA256 with 600,000 iterations.
+- ECDH contact mode uses P-256, HKDF-SHA256 and AES-256-GCM.
+- Contact private keys are stored inside a PIN-encrypted local vault using PBKDF2-SHA256 (310,000 iterations).
+- Safety fingerprints must be compared out of band to reduce public-key substitution risk.
+- Expiry is checked during decryption. View-once clearing is best-effort, not screenshot-proof.
 
 ## Limitations
-- Arabic/Urdu character mappings are app-specific extensions and are not represented as a universal official Morse standard.
-- Browser audio, vibration and light output depend on device support and permissions.
-- Cipher links with secrets in URL fragments should be treated as bearer secrets; anyone with the full link can access its contents/key.
+- No protection against compromised devices, malicious browser extensions, screenshots, weak PINs, traffic analysis or recipient copies.
+- Fixed-size padding reveals a size bucket, not the exact original message length.
+- Arabic/Urdu mappings are app-specific extensions and are not represented as a universal official Morse standard.
+- Browser audio, vibration, clipboard and sharing depend on device support.
+- Legacy passphrase ciphertext and ECDH contact envelopes are different formats.
