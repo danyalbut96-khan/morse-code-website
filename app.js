@@ -29,7 +29,7 @@ let currentTab='codebook',book={},bookOutput='',secureOutput='',roomKey=null;
 function renderCipherTab(){const target=$('#cipher-panel');target.innerHTML=currentTab==='codebook'?codebookUI():currentTab==='secure'?secureUI():secretUI();if(currentTab==='codebook')setupBook();if(currentTab==='secure')setupSecure();if(currentTab==='secret')setupRoom()}
 const EMOJI=['😀','😎','🥑','🦊','🐙','🌙','⭐','🔥','🍀','🎈','🧩','🚀','🌈','🍉','🦋','🎧','🐳','🌻','🍄','⚡','🪐','🧸','🛸','💎','🍓','🐢','🎯','🦄','🌵','🧁','🏝️','🧠','🪁','🦜','🧿','🪄','🎲','🧊','🐝','🌺','🦖','🍋','🎹','🪷','🧡','💫','🦉','🛶'];
 const templates={space:{hello:'👋🪐',friend:'👾⭐',secret:'🌑🚀',love:'💫💜',home:'🌍🏠'},animals:{hello:'🐶👋',friend:'🦊🐻',secret:'🐙🦉',love:'🦢💗',home:'🐝🌳'},food:{hello:'🍓👋',friend:'🍕🧀',secret:'🌶️🥑',love:'🍯🍰',home:'🍞🏡'}};
-function tokens(s){return s.match(/[\p{L}\p{N}_'-]+|[^\s]/gu)||[]}
+function tokens(s){return s.match(/[\p{L}\p{N}_'-]+[.,!?;:]*|[^\s]/gu)||[]}
 function fallbackChar(ch){let cp=ch.codePointAt(0);return EMOJI[cp%EMOJI.length]}
 function bookEncode(s){return tokens(s).map(t=>{let key=t.toLocaleLowerCase();if(book[key])return '🔖'+book[key];return '🔡'+[...t].map(ch=>[...ch.codePointAt(0).toString(16).padStart(6,'0')].map(h=>NIBBLES[parseInt(h,16)]).join('')).join('🔸')}).join('▫️')}
 function bookDecode(s){let reverse=Object.fromEntries(Object.entries(book).map(([k,v])=>['🔖'+v,k]));return s.split('▫️').map(t=>{if(reverse[t])return reverse[t];if(t.startsWith('🔡'))return t.slice(2).split('🔸').map(part=>String.fromCodePoint(parseInt([...part].map(e=>NIBBLES.indexOf(e).toString(16)).join(''),16))).join('');return t}).join(' ')}
