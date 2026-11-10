@@ -1,0 +1,1 @@
+{"manifest_version":3,"name":"Morse Signal Studio","version":"1.0.0","description":"Encode selected text or decode selected Morse code.","permissions":["contextMenus","tabs"],"background":{"service_worker":"background.js"},"action":{"default_title":"Morse Signal Studio"}}
