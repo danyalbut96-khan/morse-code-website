@@ -1,18 +1,20 @@
 # Morse — The signal studio
 
-A static, privacy-first signal studio. The app is designed to run entirely in the browser: no account, no application backend, no content analytics and no message upload.
+A static, privacy-first signal studio. Translation and supported cryptographic operations run in the browser; there is no account or message-processing backend.
 
 ## Product capabilities
 
-- **Overview** — product landing page, feature tour, FAQ and local-only recent activity.
-- **Encoder / Decoder** — International Morse letters, numbers and punctuation, selected Arabic/Urdu extension mappings, prosigns in the reference, audio playback with WPM/Farnsworth/tone controls, WAV export, screen flash, vibration and tap-to-key.
-- **Alphabet** — Morse reference and common prosigns.
-- **Practice** — letter recognition quiz.
-- **Cipher Lab / Codebook** — custom emoji word maps, templates, manual edits, Unicode character fallback, JSON import/export, fragment-only sharing and square/story image-card export. This is **obfuscation, not encryption**.
-- **Cipher Lab / Secure** — Web Crypto AES-256-GCM, PBKDF2-SHA-256 (600,000 iterations), random 16-byte salt and 12-byte nonce, emoji transport and optional Morse-over-base64 layer. Wrong passphrase or tampering fails authentication.
-- **Secret Room** — creates a random 256-bit key in a URL fragment. The key is a bearer secret: anyone with the complete link can use it. Use a private channel.
-- **Local controls** — encrypted-at-rest saved codebook, local-only history, optional best-effort clipboard clearing, panic wipe, dark/light theme and offline service-worker cache.
-- **PWA** — installable manifest and offline app-shell caching.
+- **Encoder / Decoder** — International Morse letters, digits, punctuation and selected app-specific Arabic/Urdu mappings; audio, WAV, screen flash, vibration and tap-to-key controls.
+- **Alphabet / Practice** — Morse reference, common prosigns and a letter-recognition quiz.
+- **Cipher Lab / Codebook** — Custom emoji word maps, templates, Unicode fallback and JSON import/export. This is **obfuscation, not encryption**.
+- **Cipher Lab / Legacy Secure** — AES-256-GCM with PBKDF2-SHA-256 (600,000 iterations), random salt and nonce, emoji transport and optional Morse transport. Existing Update 1 messages remain supported.
+- **Contacts / ECDH Secure** — Per-contact P-256 ECDH key exchange, HKDF-SHA-256 key derivation and AES-256-GCM message encryption. Safety fingerprints are four emoji plus a six-digit code and must be checked out of band.
+- **Contact vault** — Contact private keys are encrypted at rest using AES-256-GCM with a PIN-derived PBKDF2-SHA-256 key.
+- **Expiring messages** — Authenticated expiry timestamps, fixed-size payload padding buckets and a best-effort view-once display timer.
+- **Local app lock** — Optional PIN screen for casual access control. It is not full-disk encryption and does not encrypt every browser storage item.
+- **PWA sharing** — A GET share target opens /share and lets the user send shared text to Encoder or Cipher Lab.
+- **Privacy / How it works** — Dedicated explanations of local processing, browser APIs and limitations.
+- **Existing Update 1 features** — CloudExify branding, panic wipe, SEO, llms.txt, sitemap, robots, PWA and strict security headers remain.
 
 ## Project structure
 
@@ -25,8 +27,17 @@ A static, privacy-first signal studio. The app is designed to run entirely in th
 ├── alphabet/index.html
 ├── cipher/index.html
 ├── practice/index.html
+├── contacts/index.html
+├── privacy/index.html
+├── how-it-works/index.html
+├── share/index.html
 ├── app.js
-├── style.css
+├── crypto-core.js
+├── contacts.js
+├── tests/crypto-core.test.cjs
+├── docs/THREAT-MODEL.md
+├── docs/MIGRATION-UPDATE-2.md
+├── package.json
 ├── vercel.json
 ├── manifest.webmanifest
 ├── sw.js
@@ -34,64 +45,48 @@ A static, privacy-first signal studio. The app is designed to run entirely in th
 ├── sitemap.xml
 ├── llms.txt
 ├── llms-full.txt
-├── logo.svg
-├── favicon.svg
-├── favicon.ico
-├── apple-touch-icon.png
-├── apple-touch-icon.svg
-├── icon-192.png
-├── icon-512.png
-├── pwa-icon.svg
-├── pwa-192.svg
-├── pwa-512.svg
-├── cloudexify.svg
-└── og-image.svg
+└── branding and PWA assets
 ```
 
 ## Run locally
 
-Serve this directory with any static HTTP server. Service workers, Web Crypto and clipboard APIs require a secure context (HTTPS or localhost). Opening the files directly with `file://` will disable some browser features.
-
-Example:
+Use Node.js 22 or later for the test suite:
 
 ```bash
-python -m http.server 8080
+npm test
 ```
 
-Then open `http://localhost:8080`.
-
-## Vercel
-
-The repository is static and deploys from the root. `vercel.json` applies a restrictive Content Security Policy and security headers. No build command or environment variables are required.
+Serve the repository root with a static HTTP server for browser testing. Web Crypto, service workers, clipboard and media APIs require HTTPS or localhost.
 
 ## Security notes
 
-- Codebook is a playful substitution scheme. It does not provide cryptographic confidentiality.
-- Secure mode encrypts in the browser with AES-GCM. The passphrase is never saved. There is no recovery mechanism.
-- The PBKDF2 iteration count is 600,000. Encryption may take a moment on low-end phones.
-- The Secret Room URL fragment contains the generated key. Treat the complete link like a password.
-- URL fragments are not included in normal HTTP requests, but can still be exposed by screenshots, copied links, browser history, synced devices or anyone you send them to.
-- Panic wipe clears this origin's localStorage, sessionStorage, service-worker registration and Cache Storage. It cannot erase copies, screenshots, browser backups or data held by clipboard managers.
-- Arabic/Urdu mappings are an app-specific extension and are not claimed to be a universally standardized Morse alphabet.
-- Flash, vibration, clipboard, share sheet and offline capabilities vary by browser/device.
+- Codebook is reversible obfuscation, not cryptographic confidentiality.
+- Legacy Secure uses a passphrase; ECDH Contacts uses exchanged public keys. The formats are not interchangeable.
+- Never send a private key. Exchange public JWKs only and compare safety fingerprints through a separate trusted channel.
+- Contact vault data is encrypted at rest, but the app lock only gates the UI; it does not encrypt all browser storage.
+- Expiry is checked against the recipient device clock. View-once is best-effort and cannot prevent screenshots or copying.
+- Fixed-size padding hides exact message length but reveals the bucket size.
+- Panic wipe clears this origin's localStorage, sessionStorage, service-worker registration and Cache Storage. It cannot erase screenshots, backups, copies or clipboard-manager history.
+- See docs/THREAT-MODEL.md and docs/MIGRATION-UPDATE-2.md.
 
-## Known asset limitation
+## Not included in this Update 2 delivery
 
-Brand, favicon, OG and PWA artwork are supplied as SVG. Some Apple home-screen workflows and older social preview crawlers prefer raster PNG/ICO assets; add generated PNG/ICO variants before claiming universal icon compatibility. The app currently uses shareable fragment links rather than generating QR images locally.
+Camera-based Morse reading, microphone decoding, image steganography, decoy messages, zero-width and word-list disguise, Diceware, Argon2id WASM, Koch curriculum, animated light video, full English/Urdu/Arabic/Hindi localization, privacy analytics, Chrome extension, published npm package, QR generation and a finished embeddable widget SDK are not claimed as implemented.
 
 ## Test checklist
 
-1. Encode `HELLO WORLD` → `.... . .-.. .-.. --- / .-- --- .-. .-.. -..` → decode back to `HELLO WORLD`.
-2. Try digits, punctuation, SOS and the Arabic/Urdu extension reference.
-3. Change WPM, Farnsworth WPM and tone frequency; play audio and export a WAV.
-4. Test screen flash, vibration and tap-key on supported mobile hardware; verify keyboard shortcuts on desktop.
-5. In Codebook, generate a template, manually edit a word, encode/decode mapped and unknown Unicode text, then export/import JSON.
-6. Save a codebook with a passphrase, reload, unlock it; verify a wrong passphrase does not unlock it.
-7. Secure mode: encrypt a message, decrypt with the same passphrase, then try a wrong passphrase and modified emoji ciphertext. It must show authentication failure.
-8. Repeat secure round-trip with optional Morse layer.
-9. Generate a Secret Room link, open it in a second browser/device, use its key in Secure mode and verify the ciphertext round-trip.
-10. Visit every route directly, confirm unique title/description/canonical, install the PWA, then go offline after the first successful load.
-11. Verify panic wipe clears this origin's local storage and offline cache.\n12. Create two ECDH key pairs, exchange public JWKs, compare fingerprints, and verify cross-device encrypt/decrypt.\n13. Verify wrong ECDH key and modified envelope fail authentication; verify expired messages are rejected.\n14. Verify PIN vault wrong-PIN failure, lock/reopen and key rotation/revocation.\n15. Test PWA share target on Android and supported desktop browsers.\n16. Test same-origin iframe policy and camera/microphone permission prompts on supported devices.
+1. Run npm test and confirm the ECDH round-trip, wrong-key rejection, expired-message rejection, view-once metadata and wrong-PIN vault tests pass.
+2. Generate two independent ECDH pairs on two browsers/devices; exchange only public JWKs.
+3. Confirm both users see the same emoji + six-digit fingerprint and verify it out of band before encrypting.
+4. Encrypt and decrypt between the two devices; alter the envelope and test with an unrelated key.
+5. Test expiry using a short future timestamp and verify decryption is refused after expiry.
+6. Verify view-once clears the local display after 15 seconds; confirm this is not treated as guaranteed deletion.
+7. Create and unlock the contact vault; test incorrect PIN, lock/reopen, rotation and revocation.
+8. Confirm existing encrypted codebooks still unlock using the original storage passphrase.
+9. Confirm existing passphrase ciphertext and Secret Room links still work in the legacy Secure tab.
+10. Install the PWA, share text from another app, and confirm /share opens with the shared text.
+11. Test direct navigation to every page, offline shell loading, keyboard focus and reduced-motion behavior.
+12. Test same-origin iframe embedding and camera/microphone permission prompts only after those media tools are implemented.
 
 ## Branding
 
