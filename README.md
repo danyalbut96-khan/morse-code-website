@@ -12,7 +12,7 @@ A static, privacy-first signal studio. Translation and supported cryptographic o
 - **Contact vault** — Contact private keys are encrypted at rest using AES-256-GCM with a PIN-derived PBKDF2-SHA-256 key.
 - **Expiring messages** — Authenticated expiry timestamps, fixed-size payload padding buckets and a best-effort view-once display timer.
 - **Local app lock** — Optional PIN screen for casual access control. It is not full-disk encryption and does not encrypt every browser storage item.
-- **PWA sharing** — A GET share target opens /share and lets the user send shared text to Encoder or Cipher Lab.
+- **PWA sharing** — A POST share target is intercepted by the service worker and stored in the local cache before /share opens and lets the user send shared text to Encoder or Cipher Lab.
 - **Privacy / How it works** — Dedicated explanations of local processing, browser APIs and limitations.
 - **Existing Update 1 features** — CloudExify branding, panic wipe, SEO, llms.txt, sitemap, robots, PWA and strict security headers remain.
 
