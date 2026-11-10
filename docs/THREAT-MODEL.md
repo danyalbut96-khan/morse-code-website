@@ -39,3 +39,6 @@
 
 ## Important distinction
 Codebook is obfuscation. Secure mode is encryption. Emoji, word-list, zero-width and Morse presentation layers are transport disguises only; they do not add cryptographic security.
+
+## App lock and local vault notes
+The optional app lock encrypts a verifier record with a PIN-derived key and places a lock screen over the interface. It is a casual-access barrier, not full-disk encryption: it does not encrypt all history, theme preferences, cached application assets or other browser storage. The contacts vault is separately encrypted at rest. A user with developer tools, malware or control of the browser profile can bypass the UI lock or inspect unlocked plaintext.
