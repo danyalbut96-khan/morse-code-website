@@ -19,3 +19,16 @@ Semantic controls, visible focus styles, labels and reduced-motion CSS are inclu
 
 ## Contact / brand
 Built by CloudExify. CloudExify Technologies (Private) Limited, Islamabad. https://cloudexify.site
+
+
+## Update 2: ECDH contacts
+The Contacts screen supports P-256 ECDH public-key exchange. Each contact has a local ECDH key pair; private PKCS#8 material and contact records are stored inside an AES-GCM encrypted vault. The vault key is derived from a local PIN with PBKDF2-HMAC-SHA-256 (310,000 iterations), a random salt and nonce. Peers derive an AES-256-GCM key using ECDH and HKDF-SHA-256. A safety fingerprint consists of four emoji and a six-digit code; users must compare it over a separate trusted channel. Rotating a contact key requires the peer to import the new public key and verify the new fingerprint. Revocation removes local key material but cannot revoke copies held by the peer.
+
+## Expiring and view-once contact messages
+ECDH contact messages carry an authenticated expiry timestamp and a view-once preference inside the encrypted payload. The decoder rejects expired messages. Fixed-size padding rounds plaintext payloads into buckets, which hides exact length but reveals the selected bucket. View-once clears the local display after a short delay; it cannot prevent screenshots, memory inspection or saving the plaintext.
+
+## PWA sharing and additional pages
+The PWA manifest declares a GET share target at /share. Contacts, Privacy, How it works and Share routes are added to the app shell and sitemap. The same-origin frame policy permits same-origin iframe embedding; this does not itself constitute a finished embeddable widget SDK.
+
+## Current scope notes
+The ECDH contact flow and the associated crypto core are implemented as a separate feature from the legacy passphrase Secure mode. Existing Update 1 codebooks, ciphertext and Secret Room links retain their old format. See docs/MIGRATION-UPDATE-2.md and docs/THREAT-MODEL.md. Camera decoding, microphone decoding, image steganography, decoy messages, zero-width/word-list disguise, full four-language UI translation, Argon2id WASM, Diceware, Chrome extension, npm package publishing and a finished iframe widget are not represented as completed features in this build.
