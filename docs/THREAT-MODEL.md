@@ -42,3 +42,12 @@ Codebook is obfuscation. Secure mode is encryption. Emoji, word-list, zero-width
 
 ## App lock and local vault notes
 The optional app lock encrypts a verifier record with a PIN-derived key and places a lock screen over the interface. It is a casual-access barrier, not full-disk encryption: it does not encrypt all history, theme preferences, cached application assets or other browser storage. The contacts vault is separately encrypted at rest. A user with developer tools, malware or control of the browser profile can bypass the UI lock or inspect unlocked plaintext.
+
+
+## Stealth and steganography
+- AES-GCM ciphertext protects message contents while the passphrase remains secret.
+- Emoji, English/Urdu word-pair and zero-width encodings are only representations of ciphertext; they do not add encryption.
+- PNG steganography stores ciphertext bits in RGB least-significant bits. It is not robust against resizing, recompression, filters, format conversion or forensic steganalysis. Use a lossless PNG and test the extracted ciphertext.
+- A decoy envelope contains two independently encrypted messages. It may not withstand coercion or forensic analysis and must not be described as guaranteed plausible deniability.
+- Camera and microphone decoding process media locally, but permissions and browser implementations vary. Do not assume a torch can be controlled by every device.
+- The optional local pageview counter is disabled by default and stores aggregate route counts only in localStorage. No pageview event is sent to a server.
