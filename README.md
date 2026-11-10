@@ -19,7 +19,7 @@ A static, privacy-first signal studio. The app is designed to run entirely in th
 ```text
 .
 ├── index.html
-├── encoder/index.html
+├── about/index.html\n├── encoder/index.html
 ├── decoder/index.html
 ├── alphabet/index.html
 ├── cipher/index.html
