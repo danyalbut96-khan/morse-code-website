@@ -24,7 +24,7 @@ A browser-based, privacy-first Morse translator and personal cipher studio.
 - Contact private keys are stored inside a PIN-encrypted local vault using PBKDF2-SHA256 (310,000 iterations).
 - Safety fingerprints must be compared out of band to reduce public-key substitution risk.
 - Stealth Lab supports AES-GCM encrypted messages, emoji and word-list disguise, zero-width cover text and PNG least-significant-bit steganography.
-- Camera/torch, microphone decoding and animated WebM light signals depend on browser/device support.
+- QR generation is bundled locally; contact QR image scanning uses BarcodeDetector where supported.\n- Camera/torch, microphone decoding and animated WebM light signals depend on browser/device support.\n- The Koch learning path stores levels, streaks and milestone achievements locally.\n- A Manifest V3 Chrome extension, iframe widget and dependency-free Morse core package are included in the repository.
 - Opt-in analytics stores only local per-route pageview counts; it sends no analytics requests.
 - Expiry is checked during decryption. View-once clearing is best-effort, not screenshot-proof.
 
@@ -32,5 +32,5 @@ A browser-based, privacy-first Morse translator and personal cipher studio.
 - No protection against compromised devices, malicious browser extensions, screenshots, weak PINs, traffic analysis or recipient copies.
 - Fixed-size padding reveals a size bucket, not the exact original message length.
 - Arabic/Urdu mappings are app-specific extensions and are not represented as a universal official Morse standard.
-- Browser audio, vibration, clipboard and sharing depend on device support.
+- Browser audio, vibration, clipboard and sharing depend on device support.\n- Argon2id WASM and full-page English/Urdu/Arabic/Hindi localization are not included. The bundled six-word phrase generator is Diceware-style, not the official 7776-word Diceware list.
 - Legacy passphrase ciphertext and ECDH contact envelopes are different formats.
