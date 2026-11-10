@@ -50,8 +50,9 @@
     const expiresAt=options.expiresAt==null?null:Number(options.expiresAt);
     if(expiresAt!==null&&(!Number.isFinite(expiresAt)||expiresAt<=Date.now()))throw new Error('Expiry must be a future timestamp.');
     const payload={v:1,text:String(text),expiresAt,viewOnce:!!options.viewOnce,createdAt:Date.now()};
-    let raw=JSON.stringify(payload),bucket=buckets.find(n=>n>=enc.encode(raw).length+16)||Math.ceil((enc.encode(raw).length+16)/4096)*4096;
-    payload.padding=' '.repeat(Math.max(0,bucket-enc.encode(raw).length));
+    const base=JSON.stringify({...payload,padding:''}),baseLength=enc.encode(base).length;
+    const bucket=buckets.find(n=>n>=baseLength+16)||Math.ceil((baseLength+16)/4096)*4096;
+    payload.padding=' '.repeat(Math.max(0,bucket-baseLength));
     const iv=root.crypto.getRandomValues(new Uint8Array(12));
     const data=await subtle().encrypt({name:'AES-GCM',iv,additionalData:enc.encode('morse-secure-message-v1')},key,jsonBytes(payload));
     return {v:1,alg:'ECDH-P256/HKDF-SHA256/AES-256-GCM',iv:b64(iv),data:b64(data),bucket};
