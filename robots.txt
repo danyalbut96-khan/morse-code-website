@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://morse-code-translator-jade.vercel.app/sitemap.xml
