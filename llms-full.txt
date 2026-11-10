@@ -1,6 +1,6 @@
 # Morse — The signal studio: full product notes
 
-Morse Studio is a static client-side web application. The website provides an overview, text-to-Morse encoder, Morse-to-text decoder, alphabet/prosign reference, practice quiz and Cipher Lab.
+Morse Studio is a static client-side web application. The website provides an overview, text-to-Morse encoder, Morse-to-text decoder, alphabet/prosign reference, practice quiz, About page and Cipher Lab.
 
 ## Morse translation
 International Morse letters A-Z, digits 0-9, punctuation and common prosigns are supported. A slash separates words. An app-specific Arabic/Urdu extension table is included; it is a convenience mapping and must not be treated as a single globally standardized encoding. Audio timing exposes WPM and Farnsworth spacing and tone frequency. Light and vibration output are best-effort device capabilities. Tap-key controls accept dots, dashes, letter gaps and word gaps.
