@@ -13,6 +13,7 @@ A browser-based, privacy-first Morse translator and personal cipher studio.
 - /privacy — Privacy practices and limitations
 - /how-it-works — Browser APIs and local processing explanation
 - /about — About Morse Studio
+- /embed/ — Standalone embeddable Morse widget
 
 ## Privacy and security
 - Morse translation and supported cryptographic operations run locally in the browser.
@@ -22,6 +23,9 @@ A browser-based, privacy-first Morse translator and personal cipher studio.
 - ECDH contact mode uses P-256, HKDF-SHA256 and AES-256-GCM.
 - Contact private keys are stored inside a PIN-encrypted local vault using PBKDF2-SHA256 (310,000 iterations).
 - Safety fingerprints must be compared out of band to reduce public-key substitution risk.
+- Stealth Lab supports AES-GCM encrypted messages, emoji and word-list disguise, zero-width cover text and PNG least-significant-bit steganography.
+- Camera/torch, microphone decoding and animated WebM light signals depend on browser/device support.
+- Opt-in analytics stores only local per-route pageview counts; it sends no analytics requests.
 - Expiry is checked during decryption. View-once clearing is best-effort, not screenshot-proof.
 
 ## Limitations
