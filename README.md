@@ -16,7 +16,7 @@ A static, privacy-first signal studio. Translation and supported cryptographic o
 - **Camera and audio tools** — Experimental camera light reception, torch transmission, microphone tone decoding and animated WebM signal export.
 - **Koch learning path** — Progressive letter groups, local streaks and score.
 - **Language / onboarding** — Three-screen onboarding, theme support, preference toggles and a navigation translation starter for Urdu, Arabic and Hindi. Full-page localization remains incomplete.
-- **Sharing / distribution** — PWA share target, a standalone widget and iframe loader, a dependency-free Morse core package and a Manifest V3 Chrome extension.
+- **Sharing / distribution** — PWA share target, QR sharing for codebooks, contact keys and secure payloads; a standalone widget and iframe loader; a dependency-free Morse core package; and a Manifest V3 Chrome extension.
 - **PWA sharing** — A POST share target is intercepted by the service worker and stored in the local cache before /share opens and lets the user send shared text to Encoder or Cipher Lab.
 - **Privacy / How it works** — Dedicated explanations of local processing, browser APIs and limitations.
 - **Existing Update 1 features** — CloudExify branding, panic wipe, SEO, llms.txt, sitemap, robots, PWA and strict security headers remain.
@@ -76,7 +76,7 @@ Serve the repository root with a static HTTP server for browser testing. Web Cry
 
 ## Not included in this Update 2 delivery
 
-QR generation and Argon2id WASM are not included. The local six-word passphrase generator uses a compact bundled word bank and is Diceware-style, not the official 7776-word Diceware list. Full four-language page localization is not complete. Analytics are optional local route counters only and are never transmitted. Camera light reading is experimental and requires device testing.
+Argon2id WASM is not included. The local six-word passphrase generator uses a compact bundled word bank and is Diceware-style, not the official 7776-word Diceware list. Full four-language page localization is not complete. Analytics are optional local route counters only and are never transmitted. Camera light reading is experimental and requires device testing.
 
 ## Test checklist
 
