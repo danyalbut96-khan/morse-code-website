@@ -1,0 +1,13 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(8);
+select has_table('public','signal_rooms','rooms table exists');
+select has_table('public','signal_room_members','members table exists');
+select has_table('public','signal_room_messages','messages table exists');
+select ok((select relrowsecurity from pg_class where oid='public.signal_rooms'::regclass),'rooms RLS enabled');
+select ok((select relrowsecurity from pg_class where oid='public.signal_room_members'::regclass),'members RLS enabled');
+select ok((select relrowsecurity from pg_class where oid='public.signal_room_messages'::regclass),'messages RLS enabled');
+select has_column('public','signal_room_messages','ciphertext_b64','ciphertext field exists');
+select hasnt_column('public','signal_room_messages','plaintext','no plaintext field exists');
+select * from finish();
+rollback;
