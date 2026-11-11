@@ -18,7 +18,7 @@
    - `supabase/migrations/202611110002_secret_rooms_realtime.sql`
 4. Ensure the Data API exposes the public schema tables/functions. The migration grants only the required columns/table operations to `authenticated`; RLS remains mandatory.
 5. Keep Realtime private channels enabled. The migration adds room-membership policies on `realtime.messages` for Presence and Broadcast.
-6. Run both pgTAP suites under `supabase/tests/`. The room suite checks privileges and policy presence; perform the two-user isolation test below before production.
+6. Run the pgTAP suites under `supabase/tests/`, including `secret_rooms_rls.test.sql` and `secret_rooms_isolation.test.sql`. The isolation test creates disposable identities inside a rolled-back transaction and checks creator/member/non-member access. Run all SQL tests against staging before production.
 
 ## Vercel environment variables
 Set these in Vercel Project Settings → Environment Variables:
