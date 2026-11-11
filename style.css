@@ -4,3 +4,51 @@
 .app-lock-screen{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:22px;background:#080d18f5;backdrop-filter:blur(18px)}.app-lock-screen[hidden]{display:none}.app-lock-card{width:min(100%,420px);padding:28px;border:1px solid #26364c;border-radius:20px;background:#101a2b;color:#f3f6fc;box-shadow:0 24px 80px #0009}.app-lock-card h2{margin:0 0 8px}.app-lock-card p{color:#94a4ba;font-size:13px}.app-lock-card input{width:100%;padding:13px;border:1px solid #26364c;border-radius:10px;background:#080d18;color:#fff;margin:12px 0}.app-lock-actions{display:flex;gap:8px;flex-wrap:wrap}.app-lock-error{min-height:22px;color:#ff9e9e;font-size:12px}
 
 .signal-extra{margin-top:26px}.signal-extra label{display:block;margin:12px 0 6px;color:var(--muted);font-size:12px;font-weight:700}.signal-extra input:not([type=checkbox]),.signal-extra textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);margin:5px 0 12px}.signal-extra textarea{min-height:100px}.strength-track{height:6px;background:var(--line);border-radius:8px;overflow:hidden;margin:7px 0}.strength-track i{display:block;width:0;height:100%;background:var(--accent);transition:width .2s}.signal-extra .tiny,.signal-extra small{font-size:11px;color:var(--muted)}.morse-prefs{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:11px}.morse-prefs select{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px}.morse-prefs label{display:flex;align-items:center;gap:4px}.morse-onboard{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:#050912ed;backdrop-filter:blur(12px)}.morse-onboard .onboarding-card{width:min(100%,440px);padding:28px;background:var(--surface);border:1px solid var(--line);border-radius:20px;color:var(--text)}.morse-onboard h2{margin:10px 0}.morse-onboard p{color:var(--muted)}.rtl-ui,.rtl-ui main{direction:rtl}.rtl-ui .main-nav{direction:rtl}@media(max-width:1000px){.morse-prefs{margin:8px 0;order:4;width:100%}.site-header{height:auto;min-height:78px;flex-wrap:wrap;padding-bottom:10px}}@media(prefers-reduced-motion:reduce){.signal-extra *{scroll-behavior:auto!important;transition:none!important}}
+
+/* User-friendly guide, contact history and accessible responsive controls */
+.guide-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:22px 0 70px}
+.guide-card{position:relative;padding:26px;min-width:0}
+.guide-card h2{font-size:clamp(19px,2vw,24px);margin:8px 0 12px}
+.guide-card p,.guide-card li{color:var(--muted);line-height:1.8;font-size:14px}
+.guide-card ol,.guide-card ul{padding-left:22px;margin:14px 0}
+.guide-step{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--accent);color:var(--ink);font-weight:900}
+.contact-guide{margin-bottom:18px}
+.contact-guide ol{padding-left:24px;line-height:1.9}
+.contact-guide li{margin:5px 0}
+#contact-message-history .history-item{gap:10px;flex-wrap:wrap}
+#contact-message-history .history-item>div{flex:1;min-width:140px}
+html[dir="rtl"] body{direction:rtl}
+html[dir="rtl"] .main-nav,html[dir="rtl"] .header-actions,html[dir="rtl"] .control-group,html[dir="rtl"] .translator-controls{direction:rtl}
+html[dir="rtl"] .guide-card ol,html[dir="rtl"] .guide-card ul,html[dir="rtl"] .contact-guide ol{padding-left:0;padding-right:24px}
+html[dir="rtl"] .guide-card .button,html[dir="rtl"] .panel-heading,html[dir="rtl"] .section-heading{direction:rtl}
+html[dir="rtl"] input,html[dir="rtl"] textarea{ text-align:start}
+button,a,.button,.mini-button,.theme-toggle,.menu-toggle{touch-action:manipulation}
+button,.button,.mini-button,.theme-toggle,.menu-toggle{min-height:40px}
+input,select,textarea{max-width:100%;font:inherit}
+img,video,canvas{max-width:100%;height:auto}
+.panel,.translator-panel,.feature-card,.info-card{min-width:0}
+@media(max-width:760px){
+ .guide-layout{grid-template-columns:1fr;gap:13px;padding-top:14px}
+ .guide-card{padding:20px}
+ .contact-guide{padding:18px}
+ .site-header{gap:8px}
+ .header-actions{gap:6px}
+ #morse-prefs{max-width:100%;overflow-x:auto}
+ .main-nav.open{max-height:calc(100dvh - 76px);overflow-y:auto;z-index:30}
+ .translator-controls,.control-group{flex-wrap:wrap}
+ .translator-controls>*{max-width:100%}
+ .workspace{grid-template-columns:minmax(0,1fr)}
+ .history-item{align-items:flex-start;flex-wrap:wrap}
+ .history-item>div{min-width:0;overflow-wrap:anywhere}
+ .result-box,.text-area{overflow-wrap:anywhere;word-break:break-word}
+}
+@media(max-width:420px){
+ main{padding-left:12px;padding-right:12px}
+ .hero h1{font-size:clamp(38px,12vw,50px)}
+ .feature-grid{grid-template-columns:1fr}
+ .header-actions .mini-button{padding:7px 9px;font-size:11px}
+ .guide-card{padding:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
