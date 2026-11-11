@@ -40,6 +40,10 @@
     {
       "source": "/guide",
       "destination": "/index.html"
+    },
+    {
+      "source": "/ciphers",
+      "destination": "/index.html"
     }
   ]
 }
