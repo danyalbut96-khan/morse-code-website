@@ -7,7 +7,7 @@
   const copy=async s=>{try{await navigator.clipboard.writeText(s);notice('Copied to clipboard')}catch{notice('Clipboard permission unavailable')}};
   let rootEl;
   function notice(s){const n=$('#contact-notice');if(n)n.textContent=s;else alert(s)}
-  function lock(){vault=null;pin='';selected=null;clearTimeout(lockTimer);render()}
+  function lock(){window.MorseRooms?.leave?.();vault=null;pin='';selected=null;clearTimeout(lockTimer);render()}
   function armLock(){clearTimeout(lockTimer);lockTimer=setTimeout(lock,5*60*1000)}
   function shell(body){rootEl.innerHTML=body}
   function render(){
@@ -42,5 +42,27 @@
     $('#contact-copy').onclick=()=>copy($('#contact-result').textContent);$('#contact-qr').onclick=()=>{try{const el=$('#contact-qr-view');el.innerHTML='<div id="contact-qr-code"></div>';new QRCode($('#contact-qr-code'),{text:$('#contact-result').textContent,width:220,height:220,correctLevel:QRCode.CorrectLevel.L})}catch(e){notice('Message too large for a single QR; copy the JSON instead.')}};
   }
   async function persist(){localStorage.setItem(storageKey,JSON.stringify(await MorseCrypto.sealVault(vault,pin)));armLock()}
+
+  window.MorseContacts={
+    isUnlocked:()=>!!vault,
+    unlock:async value=>{
+      const raw=localStorage.getItem(storageKey);
+      if(!raw)throw new Error('Create your contact vault on the Contacts page first.');
+      const opened=await MorseCrypto.openVault(JSON.parse(raw),String(value||''));
+      if(!opened||!Array.isArray(opened.contacts))throw new Error('Invalid contact vault.');
+      vault=opened;pin=String(value);vault.rooms=Array.isArray(vault.rooms)?vault.rooms:[];armLock();return true;
+    },
+    listForRooms:()=>vault?(vault.contacts||[]).filter(c=>c.verified===true).map(c=>({id:c.id,name:c.name,localPublic:c.localPublic,localPrivate:c.localPrivate,peerPublic:c.peerPublic,verified:c.verified})):[],
+    saveRoom:async room=>{
+      if(!vault)throw new Error('Unlock your local contact vault first.');
+      vault.rooms=Array.isArray(vault.rooms)?vault.rooms:[];
+      const i=vault.rooms.findIndex(x=>x.id===room.id);if(i<0)vault.rooms.push(room);else vault.rooms[i]={...vault.rooms[i],...room};
+      await persist();return true;
+    },
+    getRoom:id=>vault?(vault.rooms||[]).find(x=>x.id===id)||null:null,
+    listRooms:()=>vault?(vault.rooms||[]).map(({id,name,createdAt,expiresAt,maxMembers})=>({id,name,createdAt,expiresAt,maxMembers})):[],
+    removeRoom:async id=>{if(!vault)return false;vault.rooms=(vault.rooms||[]).filter(x=>x.id!==id);await persist();return true;}
+  };
+
   window.initMorseContacts=function(el){rootEl=el;render()};
 })();
