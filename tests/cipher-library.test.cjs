@@ -1,0 +1,14 @@
+'use strict';
+const test=require('node:test');const assert=require('node:assert/strict');const C=require('../cipher-library.js');
+test('Caesar round trip with case and punctuation',()=>{const s='Meet me at 9!';assert.equal(C.transform('caesar',C.transform('caesar',s,{shift:7}),{shift:7,decode:true}),s)});
+test('Atbash is its own inverse',()=>{const s='Atbash, 123!';assert.equal(C.transform('atbash',C.transform('atbash',s)),s)});
+test('Vigenere round trip',()=>{const s='Attack at dawn!';const e=C.transform('vigenere',s,{key:'LEMON'});assert.equal(C.transform('vigenere',e,{key:'LEMON',decode:true}),s)});
+test('Rail Fence round trip',()=>{const s='WEAREDISCOVEREDFLEEATONCE';assert.equal(C.transform('railfence',C.transform('railfence',s,{rails:3}),{rails:3,decode:true}),s)});
+test('Pigpen round trip',()=>{const s='HELLO WORLD';assert.equal(C.transform('pigpen',C.transform('pigpen',s),{decode:true}),s)});
+test('Tap Code round trip with I/J merged',()=>{assert.equal(C.transform('tap',C.transform('tap','JIG'),{decode:true}),'IIG')});
+test('Braille round trip',()=>{const s='signal';assert.equal(C.transform('braille',C.transform('braille',s),{decode:true}),s.toUpperCase())});
+test('NATO round trip',()=>{const s='SOS';assert.equal(C.transform('nato',C.transform('nato',s),{decode:true}),s)});
+for(const id of ['binary','hex','base64'])test(id+' preserves UTF-8',()=>{const s='Morse — سلام';assert.equal(C.transform(id,C.transform(id,s),{decode:true}),s)});
+test('Semaphore mnemonic round trip',()=>{const s='MORSE';assert.equal(C.transform('semaphore',C.transform('semaphore',s),{decode:true}),s)});
+test('Baconian round trip',()=>{const s='HELLO';assert.equal(C.transform('baconian',C.transform('baconian',s),{decode:true}),s)});
+test('auto-detect recognizes structured encodings',()=>{assert.equal(C.detect('01001000 01101001')[0].id,'binary');assert.equal(C.detect('1.2 2.3')[0].id,'tap');assert.equal(C.detect('⠎⠊⠛⠝⠁⠇')[0].id,'braille')});
