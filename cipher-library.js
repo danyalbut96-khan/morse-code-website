@@ -33,7 +33,7 @@
  const s=String(input??''),decode=!!options.decode,key=String(options.key||'').toUpperCase().replace(/[^A-Z]/g,'');
  switch(name){
  case 'caesar':{const n=((Number(options.shift)||0)%26+26)%26;return shift(s,decode?-n:n)}
- case 'atbash':return shift(s,25);
+ case 'atbash':return [...s].map(c=>{const i=alphabet.indexOf(c.toUpperCase());if(i<0)return c;const v=alphabet[25-i];return c===c.toUpperCase()?v:v.toLowerCase()}).join('');
  case 'vigenere':{if(!key)throw Error('Enter an A–Z keyword for Vigenère.');let j=0;return [...s].map(c=>{const i=alphabet.indexOf(c.toUpperCase());if(i<0)return c;const n=key.charCodeAt(j++%key.length)-65;return shift(c,decode?-n:n)}).join('')}
  case 'railfence':{const n=Math.max(2,Math.min(20,Math.floor(Number(options.rails)||3)));return decode?railDecode(s,n):railEncode(s,n)}
  case 'pigpen':return decode?s.trim().split(/\s+/).map(t=>t==='/'?' ':pigpenReverse[t]||t).join(''):[...s.toUpperCase()].map(c=>c===' '?' / ':pigpenMap[c]||c).join(' ');
