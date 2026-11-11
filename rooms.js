@@ -128,13 +128,13 @@
     item.append(head,body,reveal);list.append(item);list.scrollTop=list.scrollHeight;
   }
   async function openRoom(id,key,knownMeta){
-    if(channel){await client.removeChannel(channel);channel=null;}
+    if(channel){await client.removeChannel(channel);channel=null;}if(currentKey instanceof Uint8Array)currentKey.fill(0);
     const {data:meta,error}=knownMeta?{data:knownMeta,error:null}:await client.from('signal_rooms').select('id,created_by,max_members,expires_at,created_at').eq('id',id).single();
     if(error)throw error;
     if(meta.expires_at&&new Date(meta.expires_at).getTime()<=Date.now())throw new Error('This room has expired.');
     currentRoom={id,expiresAt:meta.expires_at};currentKey=key;
-    $('#rooms-content').innerHTML='<div class="panel room-live"><div class="panel-heading"><div><h2>Secret Room</h2><p class="tiny">'+esc(id)+'</p></div><div><span class="badge" id="room-online">Connecting…</span><button class="mini-button" id="room-back">Back</button></div></div><p class="helper-text">End-to-end encrypted · server stores ciphertext envelopes only. Online and typing indicators are temporary Realtime events.</p><div id="room-messages" class="room-messages" aria-live="polite"></div><div id="room-typing" class="room-typing" aria-live="polite"></div><div class="field"><label for="room-draft">Message</label><textarea id="room-draft" class="text-area" rows="3" maxlength="12000" placeholder="Write a private message…"></textarea></div><div class="rooms-compose"><label for="room-disguise">Display disguise</label><select id="room-disguise"><option value="normal">Normal text</option><option value="emoji">Emoji code</option><option value="sentence">NATO words / sentence</option><option value="morse">Morse code</option></select><button class="button button-primary" id="room-send">Send encrypted</button></div><p class="helper-text" id="room-status"></p></div>';
-    $('#room-back').onclick=async()=>{if(channel)await client.removeChannel(channel);channel=null;currentRoom=null;currentKey=null;renderHome();};
+    $('#rooms-content').innerHTML='<div class="panel room-live"><div class="panel-heading"><div><h2>Secret Room</h2><p class="tiny">'+esc(id)+'</p></div><div><span class="badge" id="room-online">Connecting…</span><button class="mini-button" id="room-back">Back</button></div></div><p class="helper-text">End-to-end encrypted · server stores ciphertext envelopes only. Online and typing indicators are temporary Realtime events.</p><div id="room-messages" class="room-messages" aria-live="polite"></div><div id="room-typing" class="room-typing" aria-live="polite"></div><div class="field"><label for="room-draft">Message</label><textarea id="room-draft" class="text-area" rows="3" maxlength="6000" placeholder="Write a private message…"></textarea></div><div class="rooms-compose"><label for="room-disguise">Display disguise</label><select id="room-disguise"><option value="normal">Normal text</option><option value="emoji">Emoji code</option><option value="sentence">NATO words / sentence</option><option value="morse">Morse code</option></select><button class="button button-primary" id="room-send">Send encrypted</button></div><p class="helper-text" id="room-status"></p></div>';
+    $('#room-back').onclick=async()=>{await leaveRoom();renderHome();};
     const {data:historyRows,error:historyError}=await client.from('signal_room_messages').select('id,room_id,sender_id,nonce_b64,ciphertext_b64,created_at').eq('room_id',id).order('created_at',{ascending:true}).limit(100);
     if(historyError)throw historyError;(historyRows||[]).forEach(appendMessage);
     await client.realtime.setAuth();
@@ -150,11 +150,11 @@
     const inviteTools=document.createElement('div');inviteTools.className='panel spaced-panel';
     inviteTools.innerHTML='<h3>Invite another member</h3><p class="helper-text">Each member needs a verified ECDH contact with you. The room has a maximum capacity of '+Number(meta.max_members||2)+' participants; the server enforces this limit.</p><div class="rooms-compose"><label for="room-add-contact">Verified contact</label><select id="room-add-contact">'+verified.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('')+'</select><button class="mini-button" id="room-add-invite">Generate invite</button></div><div id="room-add-invite-result"></div>';
     $('#rooms-content').append(inviteTools);
-    $('#room-add-invite')?.addEventListener('click',async()=>{const out=$('#room-add-invite-result');try{const url=await generateAdditionalInvite(id,$('#room-add-contact').value);out.innerHTML='<div class="field"><label>Private invite link</label><textarea class="text-area" readonly id="room-add-invite-url">'+esc(url)+'</textarea><button class="mini-button" id="room-add-copy">Copy invite</button><button class="mini-button" id="room-add-qr">Show QR</button><div id="room-add-qr-view"></div></div>';$('#room-add-copy').onclick=()=>navigator.clipboard?.writeText(url).then(()=>say('Invite copied.')).catch(()=>say('Clipboard unavailable; copy the link manually.'));$('#room-add-qr').onclick=()=>{const target=$('#room-add-qr-view');target.innerHTML='';try{new QRCode(target,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.L});}catch{target.textContent='Invite too large for QR; copy the link.';}};}catch(e){say(e.message);}});
+    $('#room-add-invite')?.addEventListener('click',async()=>{const out=$('#room-add-invite-result');try{const url=await generateAdditionalInvite(id,$('#room-add-contact').value);out.innerHTML='<div class="field"><label>Private invite link</label><textarea class="text-area" readonly id="room-add-invite-url">'+esc(url)+'</textarea><button class="mini-button" id="room-add-copy">Copy invite</button><button class="mini-button" id="room-add-qr">Show QR</button><div id="room-add-qr-view"></div></div>';$('#room-add-copy').onclick=async()=>{try{if(!navigator.clipboard)throw new Error('Clipboard unavailable');await navigator.clipboard.writeText(url);say('Invite copied.');}catch{say('Clipboard unavailable; copy the link manually.');}};$('#room-add-qr').onclick=()=>{const target=$('#room-add-qr-view');target.innerHTML='';try{new QRCode(target,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.L});}catch{target.textContent='Invite too large for QR; copy the link.';}};}catch(e){say(e.message);}});
   }
   async function sendMessage(){
     const input=$('#room-draft'),button=$('#room-send'),status=$('#room-status'),text=input.value.trim();
-    if(!text)return;if(!navigator.onLine){status.textContent='You are offline. Room messages require an internet connection.';return;}
+    if(!text)return;if(encoder.encode(text).length>20000){status.textContent='Message is too large. Keep it under 20 KB of UTF-8 text.';return;}if(!navigator.onLine){status.textContent='You are offline. Room messages require an internet connection.';return;}
     button.disabled=true;status.textContent='Encrypting on this device…';
     try{
       const encrypted=await MorseCrypto.encryptRoomMessage(currentKey,currentRoom.id,text,$('#room-disguise').value);
@@ -163,6 +163,9 @@
     }catch(e){status.textContent=e.message||'Message could not be sent.';}
     finally{button.disabled=false;}
   }
+  async function leaveRoom(){if(channel&&client){try{await client.removeChannel(channel);}catch{}}channel=null;if(currentKey instanceof Uint8Array)currentKey.fill(0);currentKey=null;currentRoom=null;typingActive=false;clearTimeout(typingTimer);}
+  window.MorseRooms={leave:()=>{leaveRoom().catch(()=>{});}};
+  window.addEventListener('pagehide',()=>{leaveRoom().catch(()=>{});});
   window.initMorseRooms=async function(el){
     root=el;pageShell();
     try{await configure();$('#rooms-config').textContent='Connected with an anonymous, device-scoped identity.';if(!window.MorseContacts?.isUnlocked()){unlockPanel();return;}await continueAfterUnlock();}
