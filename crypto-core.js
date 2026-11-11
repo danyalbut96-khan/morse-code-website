@@ -69,7 +69,45 @@
     if(payload.expiresAt!==null&&payload.expiresAt<=Date.now())throw new Error('This message has expired.');
     return {text:payload.text,expiresAt:payload.expiresAt,viewOnce:payload.viewOnce,createdAt:payload.createdAt};
   }
-  const api={derivePinKey,sealVault,openVault,generateEcdhPair,deriveSharedSecret,deriveMessageKey,safetyFingerprint,encryptMessage,decryptMessage,b64,unb64};
+
+  async function deriveRoomWrapKey(secret,roomId){
+    if(!(secret instanceof Uint8Array)||secret.length!==32)throw new Error('Invalid ECDH shared secret.');
+    if(typeof roomId!=='string'||!/^[0-9a-f-]{36}$/i.test(roomId))throw new Error('Invalid room identifier.');
+    const salt=await subtle().digest('SHA-256',enc.encode('Morse Secret Room salt v1:'+roomId));
+    const material=await subtle().importKey('raw',secret,'HKDF',false,['deriveKey']);
+    return subtle().deriveKey({name:'HKDF',hash:'SHA-256',salt,info:enc.encode('Morse Signal Studio ECDH room key wrapping v1')},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  }
+  async function wrapRoomKey(wrappingKey,roomKey,roomId){
+    const raw=roomKey instanceof Uint8Array?roomKey:new Uint8Array(roomKey);
+    if(raw.length!==32)throw new Error('Room key must be 256 bits.');
+    const iv=root.crypto.getRandomValues(new Uint8Array(12));
+    const data=await subtle().encrypt({name:'AES-GCM',iv,additionalData:enc.encode('morse-room-key-wrap-v1:'+roomId)},wrappingKey,raw);
+    return {v:1,alg:'ECDH-P256/HKDF-SHA256/AES-256-GCM',iv:b64(iv),data:b64(data)};
+  }
+  async function unwrapRoomKey(wrappingKey,envelope,roomId){
+    if(!envelope||envelope.v!==1||envelope.alg!=='ECDH-P256/HKDF-SHA256/AES-256-GCM')throw new Error('Unsupported room invitation key envelope.');
+    const raw=await subtle().decrypt({name:'AES-GCM',iv:unb64(envelope.iv),additionalData:enc.encode('morse-room-key-wrap-v1:'+roomId)},wrappingKey,unb64(envelope.data));
+    const key=new Uint8Array(raw);if(key.length!==32)throw new Error('Invalid room key length.');return key;
+  }
+  async function encryptRoomMessage(roomKey,roomId,text,disguise='normal'){
+    const raw=roomKey instanceof Uint8Array?roomKey:new Uint8Array(roomKey);
+    if(raw.length!==32)throw new Error('Invalid room key.');
+    const key=await subtle().importKey('raw',raw,{name:'AES-GCM'},false,['encrypt']);
+    const iv=root.crypto.getRandomValues(new Uint8Array(12));
+    const payload={v:1,text:String(text),disguise:['normal','emoji','sentence','morse'].includes(disguise)?disguise:'normal',createdAt:Date.now()};
+    const data=await subtle().encrypt({name:'AES-GCM',iv,additionalData:enc.encode('morse-room-message-v1:'+roomId)},key,jsonBytes(payload));
+    return {nonce:b64(iv),ciphertext:b64(data)};
+  }
+  async function decryptRoomMessage(roomKey,roomId,envelope){
+    const raw=roomKey instanceof Uint8Array?roomKey:new Uint8Array(roomKey);
+    if(raw.length!==32)throw new Error('Invalid room key.');
+    const key=await subtle().importKey('raw',raw,{name:'AES-GCM'},false,['decrypt']);
+    const plain=await subtle().decrypt({name:'AES-GCM',iv:unb64(envelope.nonce),additionalData:enc.encode('morse-room-message-v1:'+roomId)},key,unb64(envelope.ciphertext));
+    const payload=JSON.parse(dec.decode(plain));
+    if(payload.v!==1||typeof payload.text!=='string')throw new Error('Invalid room message payload.');
+    return {text:payload.text,disguise:payload.disguise||'normal',createdAt:payload.createdAt};
+  }
+  const api={deriveRoomWrapKey,wrapRoomKey,unwrapRoomKey,encryptRoomMessage,decryptRoomMessage,derivePinKey,sealVault,openVault,generateEcdhPair,deriveSharedSecret,deriveMessageKey,safetyFingerprint,encryptMessage,decryptMessage,b64,unb64};
   root.MorseCrypto=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
