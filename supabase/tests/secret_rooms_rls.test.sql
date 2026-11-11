@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(18);
+select plan(20);
 
 select has_table('public','signal_rooms','rooms table exists');
 select has_table('public','signal_room_members','members table exists');
@@ -14,6 +14,8 @@ select hasnt_column('public','signal_room_messages','plaintext','no plaintext co
 select hasnt_column('public','signal_rooms','room_key','no room key column exists');
 select ok(exists(select 1 from pg_policies where schemaname='realtime' and tablename='messages' and policyname='signal room members can receive transient events'),'private Realtime receive policy exists');
 select ok(exists(select 1 from pg_policies where schemaname='realtime' and tablename='messages' and policyname='signal room members can send transient events'),'private Realtime send policy exists');
+select ok(exists(select 1 from pg_policies where schemaname='realtime' and tablename='messages' and policyname='signal room topics require membership for receive' and permissive='RESTRICTIVE'),'restrictive receive guard prevents permissive-policy bypass');
+select ok(exists(select 1 from pg_policies where schemaname='realtime' and tablename='messages' and policyname='signal room topics require membership for send' and permissive='RESTRICTIVE'),'restrictive send guard prevents permissive-policy bypass');
 select ok(not has_function_privilege('anon','private.cleanup_expired_signal_rooms()','execute'),'anon cannot execute cleanup');
 select ok(not has_function_privilege('authenticated','private.cleanup_expired_signal_rooms()','execute'),'authenticated cannot execute cleanup');
 select ok(not has_function_privilege('anon','public.join_signal_room(uuid,text)','execute'),'anon cannot call join RPC');
