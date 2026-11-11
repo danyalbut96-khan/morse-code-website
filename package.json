@@ -4,6 +4,6 @@
   "private": true,
   "description": "Client-side Morse and ECDH secure messaging primitives",
   "scripts": {
-    "test": "node --test tests/*.test.cjs"
+    "test": "node --test tests/*.test.cjs && node --test packages/morse-core/test.cjs"
   }
 }

@@ -20,3 +20,10 @@
 
 ## Recovery
 There is no server-side recovery. If the local PIN is lost and no backup of the encrypted vault exists, the contact vault cannot be unlocked. Exported public keys can be exchanged again, but private keys cannot be reconstructed.
+
+
+## Update 2.1 additions
+- The new Stealth Lab uses its own version-2 PBKDF2/AES-GCM envelope and does not modify Update 1 ciphertext or the ECDH contact envelope.
+- Emoji, word-list, zero-width and PNG representations wrap the encrypted payload; decode the representation before decrypting.
+- New local preference keys include `morse-lang`, `morse-haptics`, `morse-sound`, `morse-onboarded`, `morse-analytics`, and `morse-pageviews-local-v1`. They are independent of the saved codebook.
+- The optional analytics preference is off by default and does not transmit data. The six-word generator uses a bundled compact word bank, not the official Diceware list.

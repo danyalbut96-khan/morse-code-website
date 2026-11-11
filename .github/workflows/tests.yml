@@ -12,4 +12,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: node --check app.js && node --check crypto-core.js && node --check contacts.js && node --check extras.js && node --check embed/widget.js && node --check extension/background.js && node --check extension/core.js && node --check extension/result.js && node --check qrcode.min.js && node --check sw.js && node --check packages/morse-core/index.cjs && node --check packages/morse-core/index.mjs && node -e "for (const f of ['vercel.json','manifest.webmanifest','package.json','extension/manifest.json','packages/morse-core/package.json']) JSON.parse(require('fs').readFileSync(f,'utf8'))"
       - run: npm test
+      - run: node --test packages/morse-core/test.cjs

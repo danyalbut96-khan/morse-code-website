@@ -32,3 +32,16 @@ The PWA manifest declares a POST share target at /share. The service worker inte
 
 ## Current scope notes
 The ECDH contact flow and the associated crypto core are implemented as a separate feature from the legacy passphrase Secure mode. Existing Update 1 codebooks, ciphertext and Secret Room links retain their old format. See docs/MIGRATION-UPDATE-2.md and docs/THREAT-MODEL.md. Camera decoding, microphone decoding, image steganography, decoy messages, zero-width/word-list disguise, full four-language UI translation, Argon2id WASM, Diceware, Chrome extension, npm package publishing and a finished iframe widget are not represented as completed features in this build.
+
+
+## Stealth and media tools
+The Stealth Lab creates a versioned AES-GCM encrypted payload locally, then supports emoji nibble encoding, English or Urdu word-pair encoding, zero-width embedding in a cover sentence and PNG RGB least-significant-bit embedding. Decode the representation before decrypting. The payload includes an expiry timestamp and view-once preference; view-once only clears the local display on a timer. Decoy mode stores two independent encrypted payloads and is not guaranteed plausible deniability. The six-word phrase generator uses a compact bundled word bank and is not the official Diceware 7776-word list. PBKDF2-SHA256 is used; Argon2id WASM is not bundled.
+
+Camera light sampling, torch transmission, microphone tone timing and animated WebM light output are experimental and browser/device dependent. Media is processed in the browser. The PWA share target uses a POST request intercepted by the service worker and a local Cache Storage draft. The local QR generator is bundled under qrcode.min.js; contact key QR image scanning uses BarcodeDetector where available.
+
+## Distribution
+- `packages/morse-core`: dependency-free CommonJS/ESM Morse core with Node tests.
+- `extension`: Manifest V3 context-menu extension for selected-text encode/decode.
+- `embed/`: standalone widget; `embed.js` creates an iframe. The embed route has a dedicated CSP frame-ancestors rule.
+- Optional local pageview counters are off by default, store only per-route totals in localStorage and never send analytics requests.
+- Language switcher currently translates navigation labels and applies RTL direction for Urdu/Arabic. Full-page localization is still incomplete.
