@@ -48,7 +48,7 @@
       const hours=Number($('#rooms-expiry').value),expiresAt=hours?new Date(Date.now()+hours).toISOString():null;
       const {data,error}=await client.from('signal_rooms').insert({created_by:user.id,invite_hash:await shaHex(token),max_members:chosen.length+1,expires_at:expiresAt}).select('id').single();
       if(error)throw error;
-      const room={id:data.id,name:'Secret room',key:MorseCrypto.b64(roomKey),createdAt:Date.now(),expiresAt,maxMembers:chosen.length+1};
+      const room={id:data.id,name:'Secret room',key:MorseCrypto.b64(roomKey),inviteToken:bytesToUrl(token),createdAt:Date.now(),expiresAt,maxMembers:chosen.length+1};
       await window.MorseContacts.saveRoom(room);
       const inviteLinks=[];
       for(const contact of chosen){
@@ -84,13 +84,25 @@
       if(error)throw error;if(data!==true)throw new Error('Invitation expired, room closed, or room is full.');
       const {data:meta,error:metaError}=await client.from('signal_rooms').select('id,created_by,max_members,expires_at,created_at').eq('id',roomId).single();
       if(metaError)throw metaError;
-      await window.MorseContacts.saveRoom({id:roomId,name:'Secret room',key:MorseCrypto.b64(roomKey),createdAt:Date.now(),expiresAt:meta.expires_at,maxMembers:meta.max_members});
+      await window.MorseContacts.saveRoom({id:roomId,name:'Secret room',key:MorseCrypto.b64(roomKey),inviteToken:params.get('i'),createdAt:Date.now(),expiresAt:meta.expires_at,maxMembers:meta.max_members});
       history.replaceState(null,'',location.pathname+location.search);
       say('Joined securely. Only encrypted envelopes are stored on the server.');
       await openRoom(roomId,roomKey,meta);
     }catch(e){say(e.message||'Could not join this room.');}
   }
-  const morseMap={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..','0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.'};
+
+  async function generateAdditionalInvite(roomId,contactId){
+    const room=window.MorseContacts.getRoom(roomId),contact=window.MorseContacts.listForRooms().find(c=>c.id===contactId);
+    if(!room||!room.inviteToken)throw new Error('This local room does not have a saved invitation token. Rejoin using a current invite link.');
+    if(!contact)throw new Error('Choose a verified contact.');
+    const secret=await MorseCrypto.deriveSharedSecret(contact.localPrivate,contact.peerPublic);
+    const wrapKey=await MorseCrypto.deriveRoomWrapKey(secret,roomId);
+    const wrapped=await MorseCrypto.wrapRoomKey(wrapKey,MorseCrypto.unb64(room.key),roomId);
+    const url=new URL('/rooms',location.origin);
+    url.hash=new URLSearchParams({room:roomId,i:room.inviteToken,c:contact.id,w:bytesToUrl(encoder.encode(JSON.stringify(wrapped)))}).toString();
+    return url.href;
+  }
+\n  const morseMap={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..','0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.'};
   const emojiMap=['🐜','🐻','🐱','🐬','🥚','🦊','🦒','🏠','🍦','🪼','🪁','🦁','🌙','🥜','🐙','🐼','👑','🌈','⭐','🌴','☂️','🎻','🐺','❌','🛥️','🦓'];
   function disguiseText(text,mode){
     if(mode==='morse')return [...text.toUpperCase()].map(c=>c===' '?' / ':morseMap[c]||c).join(' ').replace(/\s+\/\s+/g,' / ');
@@ -133,6 +145,11 @@
     $('#room-draft').addEventListener('input',()=>{if(!channel||typingActive)return;typingActive=true;channel.send({type:'broadcast',event:'typing',payload:{typing:true}}).catch(()=>{});setTimeout(()=>typingActive=false,900);});
     $('#room-send').onclick=sendMessage;
     $('#room-draft').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+    const verified=window.MorseContacts.listForRooms();
+    const inviteTools=document.createElement('div');inviteTools.className='panel spaced-panel';
+    inviteTools.innerHTML='<h3>Invite another member</h3><p class="helper-text">Each member needs a verified ECDH contact with you. The room has a maximum capacity of '+Number(meta.max_members||2)+' participants; the server enforces this limit.</p><div class="rooms-compose"><label for="room-add-contact">Verified contact</label><select id="room-add-contact">'+verified.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('')+'</select><button class="mini-button" id="room-add-invite">Generate invite</button></div><div id="room-add-invite-result"></div>';
+    $('#rooms-content').append(inviteTools);
+    $('#room-add-invite')?.addEventListener('click',async()=>{const out=$('#room-add-invite-result');try{const url=await generateAdditionalInvite(id,$('#room-add-contact').value);out.innerHTML='<div class="field"><label>Private invite link</label><textarea class="text-area" readonly id="room-add-invite-url">'+esc(url)+'</textarea><button class="mini-button" id="room-add-copy">Copy invite</button><button class="mini-button" id="room-add-qr">Show QR</button><div id="room-add-qr-view"></div></div>';$('#room-add-copy').onclick=()=>navigator.clipboard?.writeText(url).then(()=>say('Invite copied.')).catch(()=>say('Clipboard unavailable; copy the link manually.'));$('#room-add-qr').onclick=()=>{const target=$('#room-add-qr-view');target.innerHTML='';try{new QRCode(target,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.L});}catch{target.textContent='Invite too large for QR; copy the link.';}};}catch(e){say(e.message);}});
   }
   async function sendMessage(){
     const input=$('#room-draft'),button=$('#room-send'),status=$('#room-status'),text=input.value.trim();
