@@ -19,8 +19,13 @@
   }
   async function openVault(envelope,pin){
     if(!envelope||envelope.v!==1||envelope.kdf!=='PBKDF2-SHA256')throw new Error('Unsupported contact vault format.');
-    const key=await derivePinKey(pin,unb64(envelope.salt),envelope.iterations);
-    const plain=await subtle().decrypt({name:'AES-GCM',iv:unb64(envelope.iv),additionalData:enc.encode('morse-contact-vault-v1')},key,unb64(envelope.data));
+    // Treat localStorage as untrusted input: reject malformed parameters before expensive KDF work.
+    const iterations=Number(envelope.iterations);
+    if(!Number.isSafeInteger(iterations)||iterations<100000||iterations>1000000)throw new Error('Invalid contact vault KDF parameters.');
+    const salt=unb64(envelope.salt),iv=unb64(envelope.iv),data=unb64(envelope.data);
+    if(salt.length!==16||iv.length!==12||data.length<16||data.length>8*1024*1024)throw new Error('Invalid contact vault data.');
+    const key=await derivePinKey(pin,salt,iterations);
+    const plain=await subtle().decrypt({name:'AES-GCM',iv,additionalData:enc.encode('morse-contact-vault-v1')},key,data);
     return JSON.parse(dec.decode(plain));
   }
   async function generateEcdhPair(){
