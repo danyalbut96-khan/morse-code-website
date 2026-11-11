@@ -6,7 +6,7 @@ create schema if not exists private;
 revoke all on schema private from public;
 grant usage on schema private to authenticated, service_role;
 
--- Remove the earlier public-schema SECURITY DEFINER helpers before replacing them.
+-- Remove legacy public-schema SECURITY DEFINER helpers if an older foundation was applied.
 drop trigger if exists signal_room_creator_membership on public.signal_rooms;
 drop function if exists public.add_signal_room_creator() cascade;
 drop policy if exists "members can read their room" on public.signal_rooms;
@@ -23,10 +23,8 @@ security definer
 set search_path = ''
 as $$
   select auth.uid() is not null and exists (
-    select 1
-    from public.signal_room_members m
-    where m.room_id = p_room_id
-      and m.user_id = (select auth.uid())
+    select 1 from public.signal_room_members m
+    where m.room_id = p_room_id and m.user_id = (select auth.uid())
   );
 $$;
 revoke all on function private.is_signal_room_member(uuid) from public, anon;
@@ -39,12 +37,9 @@ security definer
 set search_path = ''
 as $$
 begin
-  if new.created_by is null then
-    raise exception 'Room creator is required';
-  end if;
+  if new.created_by is null then raise exception 'Room creator is required'; end if;
   insert into public.signal_room_members(room_id,user_id)
-  values (new.id,new.created_by)
-  on conflict do nothing;
+  values (new.id,new.created_by) on conflict do nothing;
   return new;
 end;
 $$;
@@ -63,40 +58,21 @@ declare
   room_row public.signal_rooms%rowtype;
   member_count integer;
 begin
-  if (select auth.uid()) is null then
-    raise exception 'Authentication required';
-  end if;
-  if p_invite_hash is null or p_invite_hash !~ '^[0-9a-f]{64}$' then
-    raise exception 'Invalid invitation';
-  end if;
-
-  -- Locking the room serializes capacity checks so concurrent joins cannot overfill it.
+  if (select auth.uid()) is null then raise exception 'Authentication required'; end if;
+  if p_invite_hash is null or p_invite_hash !~ '^[0-9a-f]{64}$' then raise exception 'Invalid invitation'; end if;
   select * into room_row
   from public.signal_rooms
-  where id = p_room_id
-    and invite_hash = p_invite_hash
-    and closed_at is null
+  where id=p_room_id and invite_hash=p_invite_hash and closed_at is null
     and (expires_at is null or expires_at > pg_catalog.now())
   for update;
-
   if not found then return false; end if;
-
-  if exists (
-    select 1 from public.signal_room_members
-    where room_id = p_room_id and user_id = (select auth.uid())
-  ) then
+  if exists(select 1 from public.signal_room_members where room_id=p_room_id and user_id=(select auth.uid())) then
     return true;
   end if;
-
-  select count(*) into member_count
-  from public.signal_room_members
-  where room_id = p_room_id;
-
+  select count(*) into member_count from public.signal_room_members where room_id=p_room_id;
   if member_count >= room_row.max_members then return false; end if;
-
   insert into public.signal_room_members(room_id,user_id)
-  values (p_room_id,(select auth.uid()))
-  on conflict do nothing;
+  values(p_room_id,(select auth.uid())) on conflict do nothing;
   return true;
 end;
 $$;
@@ -154,8 +130,7 @@ with check (
   and (select private.is_signal_room_member(room_id))
   and exists (
     select 1 from public.signal_rooms r
-    where r.id = room_id
-      and r.closed_at is null
+    where r.id = room_id and r.closed_at is null
       and (r.expires_at is null or r.expires_at > pg_catalog.now())
   )
 );
@@ -177,9 +152,7 @@ begin
   where m.room_id = new.room_id
     and m.sender_id = new.sender_id
     and m.created_at > pg_catalog.now() - interval '60 seconds';
-  if recent_count >= 20 then
-    raise exception 'Room message rate limit exceeded';
-  end if;
+  if recent_count >= 20 then raise exception 'Room message rate limit exceeded'; end if;
   return new;
 end;
 $$;
@@ -190,55 +163,21 @@ before insert on public.signal_room_messages
 for each row execute function private.enforce_signal_room_rate_limit();
 
 -- Private Realtime channel authorization for transient typing and presence.
--- Topic format is room:<uuid>; no event content is persisted in the app's own tables.
+-- Topic format is room:<uuid>; typing/online events are never stored in application tables.
 drop policy if exists "signal room members can receive transient events" on realtime.messages;
 drop policy if exists "signal room members can send transient events" on realtime.messages;
 create policy "signal room members can receive transient events"
 on realtime.messages for select to authenticated
 using (
   extension in ('broadcast','presence')
-  and realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}
+  and realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
   and (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
 );
 create policy "signal room members can send transient events"
 on realtime.messages for insert to authenticated
 with check (
   extension in ('broadcast','presence')
-  and realtime.topic() ~ '^room:[0-9a-fA-F-]{36}$'
-  and (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
-);
-
--- Expired room deletion is performed by a trusted scheduler. Cascades delete membership and ciphertext.
-create or replace function private.cleanup_expired_signal_rooms()
-returns integer
-language plpgsql
-security definer
-set search_path = ''
-as $$
-declare removed_count integer;
-begin
-  delete from public.signal_rooms
-  where (expires_at is not null and expires_at <= pg_catalog.now())
-     or (closed_at is not null and closed_at <= pg_catalog.now());
-  get diagnostics removed_count = row_count;
-  return removed_count;
-end;
-$$;
-revoke all on function private.cleanup_expired_signal_rooms() from public, anon, authenticated;
-grant execute on function private.cleanup_expired_signal_rooms() to service_role;
-
-comment on table public.signal_room_messages is
-  'Encrypted message envelopes only. Plaintext, room keys and invite tokens must never be stored here.';
-comment on column public.signal_rooms.invite_hash is
-  'SHA-256 digest of a high-entropy invite token. Raw invite token is only in the URL fragment.';
-
-  and (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
-);
-create policy "signal room members can send transient events"
-on realtime.messages for insert to authenticated
-with check (
-  extension in ('broadcast','presence')
-  and realtime.topic() ~ '^room:[0-9a-fA-F-]{36}$'
+  and realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
   and (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
 );
 
