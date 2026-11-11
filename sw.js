@@ -1,8 +1,8 @@
 'use strict';
 /* Offline-first PWA shell. App data remains in browser storage; no message sync is performed. */
-const CACHE='morse-studio-v5';
-const REQUIRED=['/','/index.html','/style.css','/app.js','/extras.js','/qrcode.min.js','/crypto-core.js','/contacts.js','/manifest.webmanifest'];
-const PAGES=['/encoder','/decoder','/alphabet','/cipher','/practice','/about','/contacts','/privacy','/how-it-works','/share','/embed/','/embed/index.html'];
+const CACHE='morse-studio-v6';
+const REQUIRED=['/','/index.html','/style.css','/app.js','/extras.js','/qrcode.min.js','/crypto-core.js','/contacts.js','/i18n.js','/guide.js','/manifest.webmanifest'];
+const PAGES=['/encoder','/decoder','/alphabet','/cipher','/practice','/about','/contacts','/privacy','/how-it-works','/share','/guide','/embed/','/embed/index.html'];
 const ASSETS=['/embed/widget.js','/embed.js','/favicon.svg','/favicon.ico','/apple-touch-icon.png','/icon-192.png','/icon-512.png','/logo.svg','/pwa-192.svg','/pwa-512.svg','/cloudexify.svg','/og-image.svg'];
 const sameOrigin=url=>url.origin===self.location.origin;
 async function cacheResponse(cache,path,response){if(response&&response.ok&&response.type!=='opaque')await cache.put(path,response.clone())}
