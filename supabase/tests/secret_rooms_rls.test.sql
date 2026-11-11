@@ -1,0 +1,21 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(14);
+
+select has_table('public','signal_rooms','rooms table exists');
+select has_table('public','signal_room_members','members table exists');
+select has_table('public','signal_room_messages','encrypted messages table exists');
+select ok((select relrowsecurity from pg_class where oid='public.signal_rooms'::regclass),'rooms RLS enabled');
+select ok((select relrowsecurity from pg_class where oid='public.signal_room_members'::regclass),'members RLS enabled');
+select ok((select relrowsecurity from pg_class where oid='public.signal_room_messages'::regclass),'messages RLS enabled');
+select has_column('public','signal_room_messages','ciphertext_b64','ciphertext column exists');
+select has_column('public','signal_room_messages','nonce_b64','nonce column exists');
+select hasnt_column('public','signal_room_messages','plaintext','no plaintext column exists');
+select hasnt_column('public','signal_rooms','room_key','no room key column exists');
+select ok(exists(select 1 from pg_policies where schemaname='realtime' and tablename='messages' and policyname='signal room members can receive transient events'),'private Realtime receive policy exists');
+select ok(exists(select 1 from pg_policies where schemaname='realtime' and tablename='messages' and policyname='signal room members can send transient events'),'private Realtime send policy exists');
+select ok(not has_function_privilege('anon','private.cleanup_expired_signal_rooms()','execute'),'anon cannot execute cleanup');
+select ok(not has_function_privilege('authenticated','private.cleanup_expired_signal_rooms()','execute'),'authenticated cannot execute cleanup');
+
+select * from finish();
+rollback;
