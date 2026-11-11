@@ -3,7 +3,7 @@ on:
   push:
     branches: [main, working]
   pull_request:
-    branches: [main]
+    branches: [main, update-3-cipher-foundation]
 jobs:
   node-tests:
     runs-on: ubuntu-latest
