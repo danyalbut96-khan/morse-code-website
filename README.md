@@ -96,3 +96,9 @@ Argon2id WASM is not included. The local six-word passphrase generator uses a co
 ## Branding
 
 Footer attribution: **Built by CloudExify** — CloudExify Technologies (Private) Limited, Islamabad. [cloudexify.site](https://cloudexify.site).
+
+## Offline installation and behaviour
+
+The app is an installable PWA. Open it once while online, then use the browser's **Install app** or **Add to Home screen** option. The service worker precaches the app shell and core scripts, uses network-first navigation with cached fallbacks, and refreshes static assets in the background. Morse translation, codebooks, locally stored preferences/history, and supported Web Crypto operations work offline after the initial successful cache. Camera, microphone, torch, clipboard, Web Share, QR image scanning and other hardware/browser integrations still depend on device support and permissions. Contact keys and local content remain on that browser/device; offline mode does not sync data between devices. Keep a separate encrypted export of anything important.
+
+Offline availability is not guaranteed until the first successful installation/cache completes. Browser storage can be cleared by the operating system, private browsing, or the user. A fresh install or cleared site data requires an online visit again.
