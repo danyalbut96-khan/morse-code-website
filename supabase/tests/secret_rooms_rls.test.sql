@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(14);
+select plan(18);
 
 select has_table('public','signal_rooms','rooms table exists');
 select has_table('public','signal_room_members','members table exists');
@@ -16,6 +16,10 @@ select ok(exists(select 1 from pg_policies where schemaname='realtime' and table
 select ok(exists(select 1 from pg_policies where schemaname='realtime' and tablename='messages' and policyname='signal room members can send transient events'),'private Realtime send policy exists');
 select ok(not has_function_privilege('anon','private.cleanup_expired_signal_rooms()','execute'),'anon cannot execute cleanup');
 select ok(not has_function_privilege('authenticated','private.cleanup_expired_signal_rooms()','execute'),'authenticated cannot execute cleanup');
+select ok(not has_function_privilege('anon','public.join_signal_room(uuid,text)','execute'),'anon cannot call join RPC');
+select ok(not has_column_privilege('authenticated','public.signal_rooms','invite_hash','SELECT'),'invite digest is not selectable');
+select ok(not has_table_privilege('authenticated','public.signal_room_messages','DELETE'),'clients cannot delete message rows');
+select ok(not exists(select 1 from pg_policies where schemaname='public' and tablename='signal_room_messages' and cmd in ('UPDATE','DELETE')),'messages have no update/delete policies');
 
 select * from finish();
 rollback;
