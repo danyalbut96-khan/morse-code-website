@@ -126,6 +126,15 @@ grant insert (created_by,invite_hash,max_members,expires_at)
 grant select on public.signal_room_members to authenticated;
 grant select,insert on public.signal_room_messages to authenticated;
 
+drop policy if exists "room creators can create rooms" on public.signal_rooms;
+create policy "room creators can create rooms"
+on public.signal_rooms for insert to authenticated
+with check (
+  created_by = (select auth.uid())
+  and max_members between 2 and 8
+  and (expires_at is null or expires_at > pg_catalog.now())
+);
+
 create policy "room members can read room metadata"
 on public.signal_rooms for select to authenticated
 using ((select private.is_signal_room_member(id)));
