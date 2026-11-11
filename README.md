@@ -102,3 +102,12 @@ Footer attribution: **Built by CloudExify** — CloudExify Technologies (Private
 The app is an installable PWA. Open it once while online, then use the browser's **Install app** or **Add to Home screen** option. The service worker precaches the app shell and core scripts, uses network-first navigation with cached fallbacks, and refreshes static assets in the background. Morse translation, codebooks, locally stored preferences/history, and supported Web Crypto operations work offline after the initial successful cache. Camera, microphone, torch, clipboard, Web Share, QR image scanning and other hardware/browser integrations still depend on device support and permissions. Contact keys and local content remain on that browser/device; offline mode does not sync data between devices. Keep a separate encrypted export of anything important.
 
 Offline availability is not guaranteed until the first successful installation/cache completes. Browser storage can be cleared by the operating system, private browsing, or the user. A fresh install or cleared site data requires an online visit again.
+
+## Beginner-friendly guide and multilingual interface
+
+- Open **User guide** from the top navigation for step-by-step instructions covering the translator, QR codes, secure contact setup, encrypted messages, Stealth Lab, image sharing, local history and offline installation.
+- The interface language selector supports English, Urdu, Hindi and Arabic. Language dictionaries are bundled locally; no translation service receives page text. Urdu and Arabic switch the document to right-to-left direction.
+- Translation coverage is curated and offline. Some technical labels, generated content, Morse symbols and browser-native permission dialogs may remain in their original language until translated explicitly.
+- Secure Contacts is a two-person key exchange: both people create their own vault, exchange public keys, add one another, and compare the emoji + six-digit fingerprint over a separate trusted channel. Never share a private key or vault PIN.
+- Contact message history stores only encrypted envelopes (up to 30 per contact) inside the PIN-encrypted local vault. Decrypted plaintext is not stored in that history. It remains local to this browser and is not synced to another device.
+- A QR code is a transport format, not encryption. Encrypt sensitive content before creating or sharing a QR. PNG steganography should use the original PNG without resizing or recompression.
