@@ -4,7 +4,7 @@
 - Anonymous Supabase Auth sessions (no email/name/phone required).
 - Two-person and small-group rooms, up to 8 participants including the creator.
 - The creator selects existing verified ECDH contacts. The same random room key is wrapped separately for each invitee using the existing P-256 ECDH shared secret and a room-scoped HKDF key.
-- Each invite URL contains the room ID, a random invite token and that invitee's AES-GCM-wrapped room key in the URL fragment. The raw room key and raw invite token are not sent in HTTP requests.
+- Each invite URL contains the room ID, a random invite token and that invitee's AES-GCM-wrapped room key in the URL fragment. Members can generate additional per-contact invitations until the room capacity is reached. The raw room key and raw invite token are not sent in HTTP requests.
 - The database stores only a SHA-256 invite-token digest and encrypted message envelopes.
 - Durable message rows use Postgres Changes; private Realtime channels carry transient Presence and typing Broadcast events.
 - A database trigger limits each sender to 20 messages per room per 60 seconds.
@@ -62,7 +62,7 @@ This is zero-knowledge message content, not zero metadata. Supabase, Vercel and 
 - All participants must already have a verified ECDH contact with the room creator on that device. The invitee's private key remains inside their PIN-encrypted local vault.
 - Anonymous identities and room keys are device/browser scoped. Clearing site data, losing the device or losing the vault PIN can make access unrecoverable. Cross-device sync is a later Pro feature.
 - Invite links are bearer capabilities. Anyone who obtains a link can attempt to join until expiry/capacity is reached. A member who already received the room key can retain it; expiry does not revoke copies.
-- Group key rotation on member removal is not implemented in this phase. Do not remove a member and assume they lose access to old or future room content.
+- Group key rotation on member removal is not implemented in this phase. Any current member who has the invite token and verified contacts can generate additional invites until capacity is reached; do not share the invite token outside the group. Do not remove a member and assume they lose access to old or future room content.
 - Message contents are encrypted client-side with AES-256-GCM; the room key is wrapped to each member using ECDH P-256 + HKDF-SHA-256. This has not received an independent cryptographic audit.
 - Realtime reconnect, mobile sleep/resume, provider abuse controls and real two-user RLS isolation must be verified against a staging Supabase project before production.
 - The CDN client is version-pinned to `@supabase/supabase-js@2.119.0`. It is not self-hosted and does not yet carry an SRI hash; a later supply-chain hardening pass should vendor it or add a verified SRI digest.
