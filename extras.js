@@ -1,6 +1,6 @@
 'use strict';
 (function(){
-const $=s=>document.querySelector(s), enc=new TextEncoder(), dec=new TextDecoder();
+const $=s=>document.querySelector(s), enc=new TextEncoder(), dec=new TextDecoder(), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const emojis=['😀','😎','🥑','🦊','🐙','🌙','⭐','🔥','🍀','🎈','🧩','🚀','🌈','🍉','🦋','🎧'];
 const enA='quiet silver gentle bright hidden calm soft golden curious steady little patient brave kind warm clear'.split(' ');
 const enB='river garden lantern window harbor meadow pocket morning forest planet letter journey cloud candle island signal'.split(' ');
