@@ -111,3 +111,12 @@ Offline availability is not guaranteed until the first successful installation/c
 - Secure Contacts is a two-person key exchange: both people create their own vault, exchange public keys, add one another, and compare the emoji + six-digit fingerprint over a separate trusted channel. Never share a private key or vault PIN.
 - Contact message history stores only encrypted envelopes (up to 30 per contact) inside the PIN-encrypted local vault. Decrypted plaintext is not stored in that history. It remains local to this browser and is not synced to another device.
 - A QR code is a transport format, not encryption. Encrypt sensitive content before creating or sharing a QR. PNG steganography should use the original PNG without resizing or recompression.
+
+
+## Update 3 — Phase 1 foundation
+
+- The new /ciphers route contains educational tools for Caesar, Atbash, Vigenère, Rail Fence, Pigpen, Tap Code, Braille, NATO phonetic, binary, hexadecimal, Base64, Semaphore-style directional glyphs and Baconian.
+- Every cipher in this library is labelled classic / not secure. These are encodings and puzzle systems, not substitutes for the existing ECDH + AES-GCM secure messaging.
+- The cipher library is bundled locally and added to the service-worker cache. Auto-detection is heuristic and must not be treated as proof of a cipher.
+- A Supabase room-schema migration is included as an unactivated foundation. It stores ciphertext envelopes and uses RLS; no live Secret Room UI, Supabase client, auth, billing or cloud sync is enabled in this phase.
+- See docs/UPDATE-3-SECURITY-BOUNDARIES.md and docs/UPDATE-3-DEPLOYMENT.md before applying any database migration.
