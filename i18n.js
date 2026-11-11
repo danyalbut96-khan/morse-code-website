@@ -19,7 +19,7 @@
    if(node.nodeValue!==next){selfChanged.add(node);node.nodeValue=next;}
   }
   root.querySelectorAll?.('*').forEach(el=>{
-   if(el.matches('input,textarea,select,option,script,style,[data-no-translate]'))return;
+   if(el.matches('option,script,style,[data-no-translate]'))return;
    let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved)}
    for(const name of attrNames){if(!el.hasAttribute(name))continue;if(saved[name]===undefined)saved[name]=el.getAttribute(name);const source=saved[name];el.setAttribute(name,lang==='en'?source:(map[source]||source))}
   });
