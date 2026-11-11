@@ -60,10 +60,11 @@
         inviteLinks.push({name:contact.name,url:invite.href});
       }
       renderHome();
-      const host=$('#rooms-invites');
-      host.innerHTML='<h3>Private invitations</h3><p class="helper-text">Send each link only to its named contact. The wrapped room key and invite token are in the URL fragment and are not sent in the HTTP request.</p>'+inviteLinks.map((x,i)=>'<div class="field"><label>'+esc(x.name)+' · invite link</label><textarea class="text-area" readonly data-invite="'+i+'">'+esc(x.url)+'</textarea><button class="mini-button" data-copy-invite="'+i+'">Copy invite</button></div>').join('');
-      host.addEventListener('click',e=>{const b=e.target.closest('[data-copy-invite]');if(b){const t=host.querySelector('[data-invite="'+b.dataset.copyInvite+'"]');navigator.clipboard.writeText(t.value).then(()=>say('Invite copied. Send it privately.')).catch(()=>say('Clipboard unavailable; select and copy the link.'));}});
       await openRoom(data.id,roomKey);
+      const invitePanel=document.createElement('div');invitePanel.className='panel rooms-invites';
+      invitePanel.innerHTML='<h3>Private invitations</h3><p class="helper-text">Send each link only to its named contact. The wrapped room key and invite token are in the URL fragment and are not sent in the HTTP request.</p>'+inviteLinks.map((x,i)=>'<div class="field"><label>'+esc(x.name)+' · invite link</label><textarea class="text-area" readonly data-invite="'+i+'">'+esc(x.url)+'</textarea><button class="mini-button" data-copy-invite="'+i+'">Copy invite</button></div>').join('');
+      invitePanel.addEventListener('click',e=>{const b=e.target.closest('[data-copy-invite]');if(b){const t=invitePanel.querySelector('[data-invite="'+b.dataset.copyInvite+'"]');navigator.clipboard.writeText(t.value).then(()=>say('Invite copied. Send it privately.')).catch(()=>say('Clipboard unavailable; select and copy the link.'));}});
+      $('#rooms-content').prepend(invitePanel);
     }catch(e){say(e.message||'Could not create the room.');}
     finally{if($('#rooms-create-btn'))$('#rooms-create-btn').disabled=false;}
   }
