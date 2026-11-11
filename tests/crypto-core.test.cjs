@@ -46,3 +46,14 @@ test('contact vault rejects an incorrect local PIN',async()=>{
   assert.deepEqual(await C.openVault(vault,'246810'),{contacts:[],secret:'test'});
   await assert.rejects(()=>C.openVault(vault,'000000'));
 });
+
+test('contact vault rejects hostile KDF parameters before derivation',async()=>{
+  const vault=await C.sealVault({contacts:[]},'long-test-passphrase');
+  await assert.rejects(()=>C.openVault({...vault,iterations:999999999},'long-test-passphrase'),/KDF parameters/i);
+  await assert.rejects(()=>C.openVault({...vault,salt:'AA=='},'long-test-passphrase'),/vault data/i);
+});
+test('contact vault rejects ciphertext tampering',async()=>{
+  const vault=await C.sealVault({contacts:[],secret:'private'},'long-test-passphrase');
+  const bytes=C.unb64(vault.data);bytes[0]^=1;
+  await assert.rejects(()=>C.openVault({...vault,data:C.b64(bytes)},'long-test-passphrase'));
+});
