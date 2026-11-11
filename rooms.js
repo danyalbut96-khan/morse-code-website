@@ -164,7 +164,7 @@
     finally{button.disabled=false;}
   }
   async function leaveRoom(){const active=channel;channel=null;if(currentKey instanceof Uint8Array)currentKey.fill(0);currentKey=null;currentRoom=null;typingActive=false;clearTimeout(typingTimer);if(active&&client){try{await client.removeChannel(active);}catch{}}}
-  window.MorseRooms={leave:()=>{leaveRoom().catch(()=>{});}};
+  window.MorseRooms={leave:()=>{const pause=location.pathname==='/rooms'&&!!currentRoom;const task=leaveRoom();if(pause){pageShell();$('#rooms-config').textContent='Room session paused. Unlock your local vault to continue.';unlockPanel();}return task;}};
   window.addEventListener('pagehide',()=>{leaveRoom().catch(()=>{});});
   window.initMorseRooms=async function(el){
     root=el;pageShell();
