@@ -163,7 +163,7 @@
     }catch(e){status.textContent=e.message||'Message could not be sent.';}
     finally{button.disabled=false;}
   }
-  async function leaveRoom(){if(channel&&client){try{await client.removeChannel(channel);}catch{}}channel=null;if(currentKey instanceof Uint8Array)currentKey.fill(0);currentKey=null;currentRoom=null;typingActive=false;clearTimeout(typingTimer);}
+  async function leaveRoom(){const active=channel;channel=null;if(currentKey instanceof Uint8Array)currentKey.fill(0);currentKey=null;currentRoom=null;typingActive=false;clearTimeout(typingTimer);if(active&&client){try{await client.removeChannel(active);}catch{}}}
   window.MorseRooms={leave:()=>{leaveRoom().catch(()=>{});}};
   window.addEventListener('pagehide',()=>{leaveRoom().catch(()=>{});});
   window.initMorseRooms=async function(el){
