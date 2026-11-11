@@ -7,7 +7,7 @@
   const copy=async s=>{try{await navigator.clipboard.writeText(s);notice('Copied to clipboard')}catch{notice('Clipboard permission unavailable')}};
   let rootEl;
   function notice(s){const n=$('#contact-notice');if(n)n.textContent=s;else alert(s)}
-  function lock(){vault=null;pin='';selected=null;clearTimeout(lockTimer);render()}
+  function lock(){window.MorseRooms?.leave?.();vault=null;pin='';selected=null;clearTimeout(lockTimer);render()}
   function armLock(){clearTimeout(lockTimer);lockTimer=setTimeout(lock,5*60*1000)}
   function shell(body){rootEl.innerHTML=body}
   function render(){
