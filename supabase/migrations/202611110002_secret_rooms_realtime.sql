@@ -170,15 +170,152 @@ create policy "signal room members can receive transient events"
 on realtime.messages for select to authenticated
 using (
   extension in ('broadcast','presence')
-  and realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
-  and (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
+  and case
+    when realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}
+
+-- Expired room deletion is performed by a trusted scheduler. Cascades delete membership and ciphertext.
+create or replace function private.cleanup_expired_signal_rooms()
+returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare removed_count integer;
+begin
+  delete from public.signal_rooms
+  where (expires_at is not null and expires_at <= pg_catalog.now())
+     or (closed_at is not null and closed_at <= pg_catalog.now());
+  get diagnostics removed_count = row_count;
+  return removed_count;
+end;
+$$;
+revoke all on function private.cleanup_expired_signal_rooms() from public, anon, authenticated;
+grant execute on function private.cleanup_expired_signal_rooms() to service_role;
+
+comment on table public.signal_room_messages is
+  'Encrypted message envelopes only. Plaintext, room keys and invite tokens must never be stored here.';
+comment on column public.signal_rooms.invite_hash is
+  'SHA-256 digest of a high-entropy invite token. Raw invite token is only in the URL fragment.';
+
+    then (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
+    else false
+  end
 );
 create policy "signal room members can send transient events"
 on realtime.messages for insert to authenticated
 with check (
   extension in ('broadcast','presence')
-  and realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
-  and (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
+  and case
+    when realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}
+
+-- Expired room deletion is performed by a trusted scheduler. Cascades delete membership and ciphertext.
+create or replace function private.cleanup_expired_signal_rooms()
+returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare removed_count integer;
+begin
+  delete from public.signal_rooms
+  where (expires_at is not null and expires_at <= pg_catalog.now())
+     or (closed_at is not null and closed_at <= pg_catalog.now());
+  get diagnostics removed_count = row_count;
+  return removed_count;
+end;
+$$;
+revoke all on function private.cleanup_expired_signal_rooms() from public, anon, authenticated;
+grant execute on function private.cleanup_expired_signal_rooms() to service_role;
+
+comment on table public.signal_room_messages is
+  'Encrypted message envelopes only. Plaintext, room keys and invite tokens must never be stored here.';
+comment on column public.signal_rooms.invite_hash is
+  'SHA-256 digest of a high-entropy invite token. Raw invite token is only in the URL fragment.';
+
+    then (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
+    else false
+  end
+);
+
+-- Restrictive guards prevent an unrelated permissive realtime.messages policy from
+-- accidentally exposing room topics. Non-room topics keep their existing policy behavior.
+drop policy if exists "signal room topics require membership for receive" on realtime.messages;
+drop policy if exists "signal room topics require membership for send" on realtime.messages;
+create policy "signal room topics require membership for receive"
+on realtime.messages as restrictive for select to authenticated
+using (
+  realtime.topic() not like 'room:%'
+  or (
+    extension in ('broadcast','presence')
+    and case
+      when realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}
+
+-- Expired room deletion is performed by a trusted scheduler. Cascades delete membership and ciphertext.
+create or replace function private.cleanup_expired_signal_rooms()
+returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare removed_count integer;
+begin
+  delete from public.signal_rooms
+  where (expires_at is not null and expires_at <= pg_catalog.now())
+     or (closed_at is not null and closed_at <= pg_catalog.now());
+  get diagnostics removed_count = row_count;
+  return removed_count;
+end;
+$$;
+revoke all on function private.cleanup_expired_signal_rooms() from public, anon, authenticated;
+grant execute on function private.cleanup_expired_signal_rooms() to service_role;
+
+comment on table public.signal_room_messages is
+  'Encrypted message envelopes only. Plaintext, room keys and invite tokens must never be stored here.';
+comment on column public.signal_rooms.invite_hash is
+  'SHA-256 digest of a high-entropy invite token. Raw invite token is only in the URL fragment.';
+
+      then (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
+      else false
+    end
+  )
+);
+create policy "signal room topics require membership for send"
+on realtime.messages as restrictive for insert to authenticated
+with check (
+  realtime.topic() not like 'room:%'
+  or (
+    extension in ('broadcast','presence')
+    and case
+      when realtime.topic() ~ '^room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}
+
+-- Expired room deletion is performed by a trusted scheduler. Cascades delete membership and ciphertext.
+create or replace function private.cleanup_expired_signal_rooms()
+returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare removed_count integer;
+begin
+  delete from public.signal_rooms
+  where (expires_at is not null and expires_at <= pg_catalog.now())
+     or (closed_at is not null and closed_at <= pg_catalog.now());
+  get diagnostics removed_count = row_count;
+  return removed_count;
+end;
+$$;
+revoke all on function private.cleanup_expired_signal_rooms() from public, anon, authenticated;
+grant execute on function private.cleanup_expired_signal_rooms() to service_role;
+
+comment on table public.signal_room_messages is
+  'Encrypted message envelopes only. Plaintext, room keys and invite tokens must never be stored here.';
+comment on column public.signal_rooms.invite_hash is
+  'SHA-256 digest of a high-entropy invite token. Raw invite token is only in the URL fragment.';
+
+      then (select private.is_signal_room_member(substring(realtime.topic() from 6)::uuid))
+      else false
+    end
+  )
 );
 
 -- Expired room deletion is performed by a trusted scheduler. Cascades delete membership and ciphertext.
