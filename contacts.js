@@ -1,6 +1,6 @@
 'use strict';
 (function(){
-  const $=(root,s)=>root.querySelector(s), enc=new TextEncoder();
+  const $=s=>rootEl.querySelector(s), enc=new TextEncoder();
   let vault=null, pin='', lockTimer=null, selected=null;
   const storageKey='morse-contacts-v1';
   const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
