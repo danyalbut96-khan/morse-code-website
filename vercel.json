@@ -35,5 +35,11 @@
       ]
     }
   ],
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/guide",
+      "destination": "/index.html"
+    }
+  ]
 }
